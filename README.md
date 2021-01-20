@@ -5,16 +5,30 @@
 ### Latest version from GitHub
 - Clone the module contents into /opt/openitc/frontend/plugins/TelegramModule
 - Run `composer install` in /opt/openitc/frontend/plugins/TelegramModule
+- Edit `/opt/openitc/frontend/src/Lib/PluginManager.php`
 - Run `openitcockpit-update`
 
-Commands step by step:
+#### Commands step by step:
 ```bash
 cd /opt/openitc/frontend/plugins
 git clone https://github.com/binsky08/openITCOCKPIT-Telegram-Module TelegramModule
 cd TelegramModule
 composer install
-openitcockpit-update
 ```
+
+Edit `/opt/openitc/frontend/src/Lib/PluginManager.php`
+
+Add this code snippet at line 91:
+```php
+if (is_file(PLUGIN . $moduleName . DS . 'vendor/autoload.php')) {
+    require PLUGIN . $moduleName . DS . 'vendor/autoload.php';
+}
+```
+
+After it the file should look like this
+![oitc-tg-pm-snippet](https://user-images.githubusercontent.com/30630233/105217488-35a02400-5b54-11eb-8d4c-74ef18505c7a.png)
+
+Run `openitcockpit-update`
 
 
 ## Configuration
