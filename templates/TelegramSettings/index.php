@@ -214,6 +214,9 @@
                                 <li>
                                     <?= __("Add the 'host-notify-by-telegram' and 'service-notify-by-telegram' commands to your notification contact.") ?>
                                 </li>
+                                <li>
+                                    <?= __("To apply the changed notification contact (with the Telegram notification commands), run an export in openITCOCKPIT.") ?>
+                                </li>
                             </ul>
 
                             <b><?= __('If your openITCOCKPIT is reachable from the Internet:') ?></b>
@@ -245,6 +248,15 @@
                             <ul>
                                 <li>
                                     <?= __('Notifications sent by the openITCOCKPIT telegram module can be received by any chat with a real telegram user or by channels.') ?>
+                                </li>
+                                <li>
+                                    <?= __('To start the interaction, search the bot username in the Telegram global search field and start a chat with your bot.') ?>
+                                </li>
+                                <li>
+                                    <?= __('After starting the chat you need to authorize yourself with the API access key, that was auto generated in the openITCOCKPIT Telegram configuration. (type <code>/auth xxx</code> in the chat with your key as xxx)') ?>
+                                </li>
+                                <li>
+                                    <?= __('If the authorization was successful, use the bot control command <code>/start</code> to enable openITCOCKPIT notifications.') ?>
                                 </li>
                                 <li>
                                     <?= __('With enabled two-way integration issues can be acknowledged by simply clicking the button for an action provided by the bot message.') ?>
