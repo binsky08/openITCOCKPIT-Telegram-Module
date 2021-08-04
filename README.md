@@ -50,6 +50,8 @@ Your new bot is now located at [t.me/oitcTGBot](https://t.me/oitcTGBot)
 
 - Add the 'host-notify-by-telegram' and 'service-notify-by-telegram' commands to your notification contact.
 
+- To apply the changed notification contact (with the Telegram notification commands), run an export in openITCOCKPIT.
+
 ### Extended configuration (recommended)
 
 To enable real-time interactions from the bot with openITCOCKIT, setup the two-way webhook integration.
@@ -67,6 +69,12 @@ openITCOCKPIT automatically set up the webhook for the bot with the given token.
 ## Usage
 
 Notifications sent by the openITCOCKPIT telegram module can be received by any chat with a real telegram user or by channels.
+
+To start the interaction, search the bot username in the Telegram global search field and start a chat with your bot.
+
+After starting the chat you need to authorize yourself with the API access key, that was auto generated in the openITCOCKPIT Telegram configuration. (type `/auth xxx` in the chat with your key as xxx)
+
+If the authorization was successful, use the bot control command `/start` to enable openITCOCKPIT notifications.
 
 With enabled two-way integration issues can be acknowledged by simply clicking the button for an action provided by the bot message.
 
