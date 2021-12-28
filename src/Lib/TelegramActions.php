@@ -81,13 +81,13 @@ class TelegramActions {
     }
 
     /**
-     * @return array|Update[]
+     * @return \Exception|\TelegramBot\Api\Exception|\TelegramBot\Api\InvalidArgumentException|Update[]
      */
     public function getUpdates() {
         try {
             return $this->bot->getUpdates($this->getUpdateOffset() + 1);
         } catch (\TelegramBot\Api\Exception | \TelegramBot\Api\InvalidArgumentException $exception) {
-            return [];
+            return $exception;
         }
     }
 
