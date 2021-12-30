@@ -57,6 +57,8 @@ class TelegramNotificationCommand extends Command {
 
     private $ackComment = '';
 
+    private $contactUuid = '';
+
     /**
      * @var array
      */
@@ -121,6 +123,7 @@ class TelegramNotificationCommand extends Command {
             'output'           => ['help' => __d('oitc_console', 'host output => $HOSTOUTPUT$/$SERVICEOUTPUT$')],
             'ackauthor'        => ['help' => __d('oitc_console', 'host acknowledgement author => $NOTIFICATIONAUTHOR$')],
             'ackcomment'       => ['help' => __d('oitc_console', 'host acknowledgement comment => $NOTIFICATIONCOMMENT$')],
+            'contactuuid'      => ['help' => __d('oitc_console', 'Send notification to all Telegram chats with the given Contact uuid => $CONTACTNAME$')],
             'no-emoji'         => ['help' => __d('oitc_console', 'Disable emojis in subject'), 'boolean' => true, 'default' => false]
         ]);
 
@@ -479,7 +482,7 @@ class TelegramNotificationCommand extends Command {
         if ($this->telegramChats->count() > 0) {
             $this->telegramChats->each(function ($Chat, $key) use ($text, $InlineKeyboardMarkup) {
                 if (is_array($Chat)) {
-                    if ($Chat['enabled']) {
+                    if ($Chat['enabled'] && $Chat['contact_uuid'] == $this->contactUuid) {
                         $this->bot->sendMessage(
                             $Chat['chat_id'],
                             $text,
@@ -490,7 +493,7 @@ class TelegramNotificationCommand extends Command {
                         );
                     }
                 } else {
-                    if ($Chat->get('enabled')) {
+                    if ($Chat->get('enabled') && $Chat->get('contact_uuid') == $this->contactUuid) {
                         $this->bot->sendMessage(
                             $Chat->get('chat_id'),
                             $text,
@@ -590,6 +593,10 @@ class TelegramNotificationCommand extends Command {
 
         if ($args->getOption('ackcomment') !== '') {
             $this->ackComment = $args->getOption('ackcomment');
+        }
+
+        if ($args->getOption('contactuuid') !== '') {
+            $this->contactUuid = $args->getOption('contactuuid');
         }
 
         $this->noEmoji = $args->getOption('no-emoji');
