@@ -14,6 +14,7 @@ use itnovum\openITCOCKPIT\Exceptions\ServiceNotFoundException;
 use TelegramBot\Api\BotApi;
 use TelegramBot\Api\Types\Update;
 use TelegramModule\Model\Table\TelegramChatsTable;
+use TelegramModule\Model\Table\TelegramContactsAccessKeysTable;
 use TelegramModule\Model\Table\TelegramSettingsTable;
 
 class TelegramActions {
@@ -23,6 +24,9 @@ class TelegramActions {
 
     /** @var TelegramSettingsTable */
     private $TelegramSettingsTable;
+
+    /** @var TelegramContactsAccessKeysTable */
+    private $TelegramContactsAccessKeysTable;
 
     private $telegramSettings = [];
     private $proxySettings = [];
@@ -37,6 +41,8 @@ class TelegramActions {
     public function __construct(string $tokenOverwrite = null) {
         $this->TelegramChatsTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramChats');
         $this->TelegramSettingsTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramSettings');
+        $this->TelegramContactsAccessKeysTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramContactsAccessKeys');
+
         $this->telegramSettings = $this->TelegramSettingsTable->getTelegramSettings();
 
         /** @var ProxiesTable $ProxiesTable */
@@ -227,12 +233,14 @@ class TelegramActions {
 
             if (str_starts_with(trim($update->getMessage()->getText()), '/auth ')) {
                 $providedAuthKey = str_replace('/auth ', '', trim($update->getMessage()->getText()));
-                if ($providedAuthKey === $this->telegramSettings->get('access_key')) {
+                $contact = $this->TelegramContactsAccessKeysTable->getContactByAccessKey($providedAuthKey);
+                if ($contact !== null) {
                     if (!$this->TelegramChatsTable->existsByChatId($update->getMessage()->getChat()->getId())) {
                         $TelegramChat = $this->TelegramChatsTable->newEntity([
                             'chat_id'               => $update->getMessage()->getChat()->getId(),
                             'enabled'               => false,
-                            'started_from_username' => $update->getMessage()->getFrom()->getUsername()
+                            'started_from_username' => $update->getMessage()->getFrom()->getUsername(),
+                            'contact_uuid'          => $contact->get('uuid')
                         ]);
                         $this->TelegramChatsTable->save($TelegramChat);
 
