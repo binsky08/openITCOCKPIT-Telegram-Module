@@ -32,7 +32,7 @@ class InstallSeed extends AbstractSeed {
         $data = [
             [
                 'name'         => 'host-notifiy-by-telegram',
-                'command_line' => '/opt/openitc/frontend/bin/cake TelegramModule.TelegramNotification --type Host --notificationtype $NOTIFICATIONTYPE$ --hostuuid "$HOSTNAME$" --state "$HOSTSTATEID$" --output "$HOSTOUTPUT$" --ackauthor "$NOTIFICATIONAUTHOR$" --ackcomment "$NOTIFICATIONCOMMENT$"',
+                'command_line' => '/opt/openitc/frontend/bin/cake TelegramModule.TelegramNotification --type Host --notificationtype $NOTIFICATIONTYPE$ --hostuuid "$HOSTNAME$" --state "$HOSTSTATEID$" --output "$HOSTOUTPUT$" --ackauthor "$NOTIFICATIONAUTHOR$" --ackcomment "$NOTIFICATIONCOMMENT$" --contactuuid "$CONTACTNAME$"',
                 'command_type' => NOTIFICATION_COMMAND,
                 'human_args'   => null,
                 'uuid'         => \itnovum\openITCOCKPIT\Core\UUID::v4(),
@@ -40,7 +40,7 @@ class InstallSeed extends AbstractSeed {
             ],
             [
                 'name'         => 'service-notify-by-telegram',
-                'command_line' => '/opt/openitc/frontend/bin/cake TelegramModule.TelegramNotification --type Service --notificationtype $NOTIFICATIONTYPE$ --hostuuid "$HOSTNAME$" --serviceuuid "$SERVICEDESC$" --state "$SERVICESTATEID$" --output "$SERVICEOUTPUT$" --ackauthor "$NOTIFICATIONAUTHOR$" --ackcomment "$NOTIFICATIONCOMMENT$"',
+                'command_line' => '/opt/openitc/frontend/bin/cake TelegramModule.TelegramNotification --type Service --notificationtype $NOTIFICATIONTYPE$ --hostuuid "$HOSTNAME$" --serviceuuid "$SERVICEDESC$" --state "$SERVICESTATEID$" --output "$SERVICEOUTPUT$" --ackauthor "$NOTIFICATIONAUTHOR$" --ackcomment "$NOTIFICATIONCOMMENT$" --contactuuid "$CONTACTNAME$"',
                 'command_type' => NOTIFICATION_COMMAND,
                 'human_args'   => null,
                 'uuid'         => \itnovum\openITCOCKPIT\Core\UUID::v4(),
@@ -63,6 +63,15 @@ class InstallSeed extends AbstractSeed {
 
             if (empty($result)) {
                 $table->insert($record)->save();
+            } else {
+                $QueryBuilder
+                    ->update($table->getName())
+                    ->where([
+                        'command_type' => NOTIFICATION_COMMAND,
+                        'name'         => $record['name']
+                    ])
+                    ->set('command_line', $record['command_line'])
+                    ->execute();
             }
         }
 
