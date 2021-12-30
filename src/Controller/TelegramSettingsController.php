@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace TelegramModule\Controller;
 
+use App\Model\Table\ContactsTable;
 use App\Model\Table\SystemsettingsTable;
 use Cake\ORM\TableRegistry;
 use TelegramModule\Lib\TelegramActions;
+use TelegramModule\Model\Table\TelegramContactsAccessKeysTable;
 use TelegramModule\Model\Table\TelegramSettingsTable;
 
 /**
@@ -27,6 +29,27 @@ class TelegramSettingsController extends AppController {
         $TelegramSettingsTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramSettings');
         $telegramSettings = $TelegramSettingsTable->getTelegramSettings();
 
+
+        /** @var TelegramContactsAccessKeysTable $TelegramContactsAccessKeysTable */
+        $TelegramContactsAccessKeysTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramContactsAccessKeys');
+        $contactsAccessKeys = $TelegramContactsAccessKeysTable->getAllAsArray();
+
+        /** @var $ContactsTable ContactsTable */
+        $ContactsTable = TableRegistry::getTableLocator()->get('Contacts');
+        $contacts = [];
+        $contactsQuery = $ContactsTable->find()
+            ->select([
+                'Contacts.name',
+                'Contacts.uuid'
+            ])
+            ->disableHydration()
+            ->all();
+
+        if ($contactsQuery !== null) {
+            $contacts = $contactsQuery->toArray();
+        }
+
+
         if ($telegramSettings->get('external_webhook_domain') == "") {
             /** @var SystemsettingsTable $SystemsettingsTable */
             $SystemsettingsTable = TableRegistry::getTableLocator()->get('Systemsettings');
@@ -36,8 +59,10 @@ class TelegramSettingsController extends AppController {
 
         if ($this->request->is('get')) {
             $this->set('telegramSettings', $telegramSettings);
+            $this->set('contacts', $contacts);
+            $this->set('contactsAccessKeys', $contactsAccessKeys);
             $this->viewBuilder()->setOption('serialize', [
-                'telegramSettings'
+                'telegramSettings', 'contacts', 'contactsAccessKeys'
             ]);
             return;
         }
@@ -74,6 +99,38 @@ class TelegramSettingsController extends AppController {
             $this->viewBuilder()->setOption('serialize', [
                 'telegramSettings'
             ]);
+        }
+    }
+
+    public function genKey() {
+        if ($this->isAngularJsRequest()) {
+            if ($this->request->is('post')) {
+                $contact_uuid = $this->request->getData('contact_uuid');
+                if ($contact_uuid !== null) {
+                    /** @var $ContactsTable ContactsTable */
+                    $ContactsTable = TableRegistry::getTableLocator()->get('Contacts');
+
+                    $query = $ContactsTable->find()
+                        ->where([
+                            'Contacts.uuid' => $contact_uuid
+                        ])
+                        ->disableHydration()
+                        ->first();
+
+                    if ($query !== null) {
+                        /** @var TelegramContactsAccessKeysTable $TelegramContactsAccessKeysTable */
+                        $TelegramContactsAccessKeysTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramContactsAccessKeys');
+                        $contactsAccessKey = $TelegramContactsAccessKeysTable->getNewOrExistingAccessKeyByContactUuid($contact_uuid);
+                        $TelegramContactsAccessKeysTable->saveOrFail($contactsAccessKey);
+
+                        $contactsAccessKeys = $TelegramContactsAccessKeysTable->getAllAsArray();
+                        $this->set('contactsAccessKeys', $contactsAccessKeys);
+                        $this->viewBuilder()->setOption('serialize', [
+                            'contactsAccessKeys'
+                        ]);
+                    }
+                }
+            }
         }
     }
 }

@@ -55,11 +55,6 @@ class TelegramSettingsTable extends Table {
             ->notEmptyString('token');
 
         $validator
-            ->scalar('access_key')
-            ->maxLength('access_key', 255)
-            ->notEmptyString('access_key');
-
-        $validator
             ->integer('last_update_id')
             ->allowEmptyString('last_update_id');
 
@@ -83,26 +78,11 @@ class TelegramSettingsTable extends Table {
     }
 
     /**
-     * @param int $length
-     * @return string
-     */
-    private function generateRandomString($length = 10) {
-        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-.+:!=';
-        $charactersLength = strlen($characters);
-        $randomString = '';
-        for ($i = 0; $i < $length; $i++) {
-            $randomString .= $characters[rand(0, $charactersLength - 1)];
-        }
-        return $randomString;
-    }
-
-    /**
      * @return \TelegramModule\Model\Entity\TelegramSetting
      */
     public function getTelegramSettings() {
         $default = [
             'token'                   => '',
-            'access_key'              => $this->generateRandomString(),
             'last_update_id'          => 0,
             'two_way'                 => false,
             'external_webhook_domain' => '',

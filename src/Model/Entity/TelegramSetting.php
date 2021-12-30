@@ -11,7 +11,6 @@ use Cake\ORM\Entity;
  *
  * @property int $id
  * @property string $token
- * @property string $access_key
  * @property int $last_update_id
  * @property bool $two_way
  * @property string $external_webhook_domain
@@ -32,7 +31,6 @@ class TelegramSetting extends Entity {
      */
     protected $_accessible = [
         'token'                   => true,
-        'access_key'              => true,
         'last_update_id'          => true,
         'two_way'                 => true,
         'external_webhook_domain' => true,

@@ -9,15 +9,12 @@ use Cake\ORM\Entity;
 /**
  * TelegramModule Entity
  *
- * @property int $id
- * @property int $chat_id
- * @property bool $enabled
- * @property string $started_from_username
  * @property string $contact_uuid
+ * @property string $access_key
  * @property \Cake\I18n\FrozenTime $created
  * @property \Cake\I18n\FrozenTime $modified
  */
-class TelegramChats extends Entity {
+class TelegramContactsAccessKeys extends Entity {
     /**
      * Fields that can be mass assigned using newEntity() or patchEntity().
      *
@@ -28,11 +25,9 @@ class TelegramChats extends Entity {
      * @var array
      */
     protected $_accessible = [
-        'chat_id'               => true,
-        'enabled'               => true,
-        'started_from_username' => true,
-        'contact_uuid'          => true,
-        'created'               => true,
-        'modified'              => true,
+        'contact_uuid' => true,
+        'access_key' => true,
+        'created' => true,
+        'modified' => true,
     ];
 }

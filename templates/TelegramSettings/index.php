@@ -42,28 +42,12 @@
                                 class="form-control"
                                 type="text"
                                 placeholder="123456789:YYKKKSNNIBBBBAAXXXXATCCC234567...."
-                                ng-model="post.token">
+                                ng-model="telegramSettings.token">
                             <div ng-repeat="error in errors.token">
                                 <div class="help-block text-danger">{{ error }}</div>
                             </div>
                             <div class="help-block">
                                 <?= __('Telegram bot token'); ?>
-                            </div>
-                        </div>
-
-                        <div class="form-group required" ng-class="{'has-error':errors.access_key}">
-                            <label class="control-label">
-                                <?php echo __('API access key'); ?>
-                            </label>
-                            <input
-                                class="form-control"
-                                type="text"
-                                ng-model="post.access_key">
-                            <div ng-repeat="error in errors.access_key">
-                                <div class="help-block text-danger">{{ error }}</div>
-                            </div>
-                            <div class="help-block">
-                                <?= __('Telegram api access key to authenticate as privileged user in the telegram chat against this api.'); ?>
                             </div>
                         </div>
 
@@ -74,7 +58,7 @@
                                 <input type="checkbox"
                                        class="custom-control-input"
                                        id="enableTwoWayWebook"
-                                       ng-model="post.two_way">
+                                       ng-model="telegramSettings.two_way">
                                 <label class="custom-control-label" for="enableTwoWayWebook">
                                     <?php echo __('Enable two-way webhook integration'); ?>
                                 </label>
@@ -86,7 +70,7 @@
                             </div>
                         </div>
 
-                        <div class="panel-container show" ng-if="post.two_way">
+                        <div class="panel-container show" ng-if="telegramSettings.two_way">
                             <div class="panel-content">
                                 <div class="form-group required"
                                      ng-class="{'has-error':errors.external_webhook_domain}">
@@ -97,7 +81,7 @@
                                         class="form-control"
                                         type="text"
                                         placeholder="https://demo.openitcockpit.io"
-                                        ng-model="post.external_webhook_domain">
+                                        ng-model="telegramSettings.external_webhook_domain">
                                     <div ng-repeat="error in errors.external_webhook_domain">
                                         <div class="help-block text-danger">{{ error }}</div>
                                     </div>
@@ -116,7 +100,7 @@
                                         class="form-control"
                                         type="text"
                                         placeholder=""
-                                        ng-model="post.webhook_api_key">
+                                        ng-model="telegramSettings.webhook_api_key">
                                     <div ng-repeat="error in errors.webhook_api_key">
                                         <div class="help-block text-danger">{{ error }}</div>
                                     </div>
@@ -138,7 +122,7 @@
                                 <input type="checkbox"
                                        class="custom-control-input"
                                        id="use_proxy"
-                                       ng-model="post.use_proxy">
+                                       ng-model="telegramSettings.use_proxy">
                                 <label class="custom-control-label" for="use_proxy">
                                     <?php echo __('Use Proxy'); ?>
                                 </label>
@@ -153,6 +137,7 @@
                                 </div>
                             </div>
                         </div>
+
                         <div class="card margin-top-10">
                             <div class="card-body">
                                 <div class="float-right">
@@ -162,6 +147,47 @@
                             </div>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xl-12">
+        <div id="panel-1" class="panel">
+            <div class="panel-hdr">
+                <div>
+                    <h2>
+                        <?php echo __('Enable Contacts for Telegram notifications'); ?>
+                    </h2>
+                    <div class="help-block margin-bottom-10">
+                        <?= __('Generate Telegram api access keys to authenticate as openITCOCKPIT Contact in the Telegram chat using the connected Telegram Bot.'); ?>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-container show">
+                <div class="panel-content">
+                    <div class="card margin-top-2" ng-repeat="contact in contacts">
+                        <div class="card-body">
+                            <div class="form-group">
+                                <span style="min-width: 200px;display: inline-block;">
+                                    {{contact.name}}
+                                </span>
+                                <span>
+                                    <a ng-if="isContactAccessKeyGenerated(contact.uuid) == false"
+                                       class="btn btn-xs btn-success mr-1 shadow-0"
+                                       ng-click="generateAccessKeyForContact(contact.uuid)"
+                                       href="javascript:void(0);">
+                                        <?= __('Enable') ?>
+                                    </a>
+                                    <code ng-if="isContactAccessKeyGenerated(contact.uuid) != false">
+                                        {{isContactAccessKeyGenerated(contact.uuid)}}
+                                    </code>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

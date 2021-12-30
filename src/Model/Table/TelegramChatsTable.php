@@ -62,6 +62,13 @@ class TelegramChatsTable extends Table {
             ->maxLength('started_from_username', 255)
             ->notEmptyString('started_from_username');
 
+        $validator
+            ->scalar('contact_uuid')
+            ->maxLength('contact_uuid', 37)
+            ->requirePresence('contact_uuid', 'create')
+            ->notEmptyString('contact_uuid')
+            ->add('contact_uuid', 'unique', ['rule' => 'validateUnique', 'provider' => 'table']);
+
         return $validator;
     }
 

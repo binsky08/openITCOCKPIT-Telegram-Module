@@ -1,7 +1,7 @@
 angular.module('openITCOCKPIT')
     .controller('TelegramSettingsIndexController', function($scope, $http, $state, NotyService, RedirectService){
 
-        $scope.post = {
+        $scope.telegramSettings = {
             token: '',
             access_key: '',
             two_way: true,
@@ -9,6 +9,8 @@ angular.module('openITCOCKPIT')
             external_webhook_domain: '',
             webhook_api_key: ''
         };
+        $scope.contacts = [];
+        $scope.contactsAccessKeys = [];
 
         $scope.hasError = null;
 
@@ -18,7 +20,9 @@ angular.module('openITCOCKPIT')
                     'angular': true
                 }
             }).then(function(result){
-                $scope.post = result.data.telegramSettings;
+                $scope.telegramSettings = result.data.telegramSettings;
+                $scope.contacts = result.data.contacts;
+                $scope.contactsAccessKeys = result.data.contactsAccessKeys;
 
             }, function errorCallback(result){
                 if(result.status === 403){
@@ -33,11 +37,11 @@ angular.module('openITCOCKPIT')
 
 
         $scope.submit = function(){
-            if($scope.post.two_way && ($scope.post.external_webhook_domain === "" || $scope.post.webhook_api_key === "")){
+            if($scope.telegramSettings.two_way && ($scope.telegramSettings.external_webhook_domain === "" || $scope.telegramSettings.webhook_api_key === "")){
                 NotyService.genericError({message: "Fill out all required fields!"});
             }else{
                 $http.post("/telegram_module/TelegramSettings/index.json?angular=true",
-                    $scope.post
+                    $scope.telegramSettings
                 ).then(function(result){
                     NotyService.genericSuccess();
                     $scope.errors = null;
@@ -48,6 +52,36 @@ angular.module('openITCOCKPIT')
                     }
                 });
             }
+        };
+
+        $scope.isContactAccessKeyGenerated = function(contact_uuid) {
+            for (const contactAccessKeyObj of $scope.contactsAccessKeys) {
+                if (contactAccessKeyObj.contact_uuid === contact_uuid) {
+                    return contactAccessKeyObj.access_key;
+                }
+            }
+            return false;
+        };
+
+        $scope.generateAccessKeyForContact = function(contact_uuid) {
+            $http.post("/telegram_module/TelegramSettings/genKey.json?angular=true",
+                {
+                    'contact_uuid': contact_uuid
+                }
+            ).then(function(result){
+                if (result.data.contactsAccessKeys) {
+                    $scope.contactsAccessKeys = result.data.contactsAccessKeys;
+                    NotyService.genericSuccess();
+                    $scope.errors = null;
+                } else {
+                    NotyService.genericError();
+                }
+            }, function errorCallback(result){
+                NotyService.genericError();
+                if(result.data.hasOwnProperty('error')){
+                    $scope.errors = result.data.error;
+                }
+            });
         };
 
         $scope.load();
