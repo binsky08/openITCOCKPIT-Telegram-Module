@@ -233,14 +233,14 @@ class TelegramActions {
 
             if (str_starts_with(trim($update->getMessage()->getText()), '/auth ')) {
                 $providedAuthKey = str_replace('/auth ', '', trim($update->getMessage()->getText()));
-                $contact = $this->TelegramContactsAccessKeysTable->getContactByAccessKey($providedAuthKey);
-                if ($contact !== null) {
+                $contactAccessKey = $this->TelegramContactsAccessKeysTable->getContactByAccessKey($providedAuthKey);
+                if ($contactAccessKey !== null) {
                     if (!$this->TelegramChatsTable->existsByChatId($update->getMessage()->getChat()->getId())) {
                         $TelegramChat = $this->TelegramChatsTable->newEntity([
                             'chat_id'               => $update->getMessage()->getChat()->getId(),
                             'enabled'               => false,
                             'started_from_username' => $update->getMessage()->getFrom()->getUsername(),
-                            'contact_uuid'          => $contact->get('uuid')
+                            'contact_uuid'          => $contactAccessKey->get('contact_uuid')
                         ]);
                         $this->TelegramChatsTable->save($TelegramChat);
 

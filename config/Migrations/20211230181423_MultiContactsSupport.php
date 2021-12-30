@@ -1,7 +1,10 @@
 <?php
 declare(strict_types=1);
 
+use App\Model\Table\ContactsTable;
+use Cake\ORM\TableRegistry;
 use Migrations\AbstractMigration;
+use TelegramModule\Model\Table\TelegramChatsTable;
 
 /**
  * Class MultiContactsSupport
@@ -49,6 +52,20 @@ class MultiContactsSupport extends AbstractMigration {
                     'null' => false,
                 ])
                 ->save();
+        }
+
+        /** @var $ContactsTable ContactsTable */
+        $ContactsTable = TableRegistry::getTableLocator()->get('Contacts');
+        /** @var $TelegramChatsTable TelegramChatsTable */
+        $TelegramChatsTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramChats');
+
+        $chats = $TelegramChatsTable->getTelegramChats();
+        $infoContacts = $ContactsTable->getAllInfoContacts();
+        if (isset($infoContacts[0])){
+            foreach ($chats as $chat) {
+                $chat->set('contact_uuid', $infoContacts[0]['uuid']);
+                $TelegramChatsTable->save($chat);
+            }
         }
     }
 
