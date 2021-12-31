@@ -6,13 +6,15 @@
 - Clone the module contents into /opt/openitc/frontend/plugins/TelegramModule
 - Run `composer install` in /opt/openitc/frontend/plugins/TelegramModule
 - Edit `/opt/openitc/frontend/src/Lib/PluginManager.php`
-- Run `openitcockpit-update`
+- Run `openitcockpit-update --cc`
 
 #### Commands step by step:
 ```bash
 cd /opt/openitc/frontend/plugins
 git clone https://github.com/binsky08/openITCOCKPIT-Telegram-Module TelegramModule
 cd TelegramModule
+
+apt-get install composer
 composer install
 ```
 
@@ -28,7 +30,7 @@ if (is_file(PLUGIN . $moduleName . DS . 'vendor/autoload.php')) {
 After it the file should look like this
 ![oitc-tg-pm-snippet](https://user-images.githubusercontent.com/30630233/105217488-35a02400-5b54-11eb-8d4c-74ef18505c7a.png)
 
-Run `openitcockpit-update`
+Run `openitcockpit-update --cc`
 
 
 ## Configuration
@@ -68,18 +70,37 @@ openITCOCKPIT automatically set up the webhook for the bot with the given token.
 
 ## Usage
 
-Notifications sent by the openITCOCKPIT telegram module can be received by any chat with a real telegram user or by channels.
+Notifications sent by the openITCOCKPIT Telegram Module can be received by any chat with a real telegram user or by channels.
 
 To start the interaction, search the bot username in the Telegram global search field and start a chat with your bot.
 
-After starting the chat you need to authorize yourself with the API access key, that was auto generated in the openITCOCKPIT Telegram configuration. (type `/auth xxx` in the chat with your key as xxx)
+After starting the chat you need to authorize yourself with an authentication code for a openITCOCKPIT Contact, that can be manually generated in the openITCOCKPIT Telegram configuration for Contacts containing a Telegram notification command. (type `/auth xxx` in the chat with your key as xxx)
 
-If the authorization was successful, use the bot control command `/start` to enable openITCOCKPIT notifications.
+If the authorization was successful, use the bot control command `/start` to enable openITCOCKPIT notifications. Otherwise you will not receive any notifications.
 
-With enabled two-way integration issues can be acknowledged by simply clicking the button for an action provided by the bot message.
+With enabled two-way integration, issues can be acknowledged by simply clicking the button for an action provided by the bot message.
 
 If your openITCOCKPIT is reachable from the Internet and you configured the two-way webhook integration, interactions with the bot are processed within seconds.
 
-If your openITCOCKPIT is not reachable from the Internet, the built-in basic two-way integration calls up interactions cached by Telegram and processes them every minute. (Therefore, interactions with the bot can take up to a minute to process!)
+If your openITCOCKPIT is not reachable from the Internet, the built-in basic one-way integration calls up interactions cached by Telegram and processes them every minute. (Therefore, interactions with the bot can take up to a minute to process!)
 
 Run `/help` in bot chat to get more information about how to control the bot.
+
+## Update
+
+- Extract the current release archive over the existing TelegramModule folder or pull from the main branch
+- Run an openitcockpit-update
+- Make sure the nagios model cache is cleared (not in openitcockpit-update implemented yet)
+- Apply new user roles if required
+- Refresh monitoring configuration in the openITCOCKPIT web frontend
+
+![grafik](https://user-images.githubusercontent.com/30630233/147828242-40f4b3a1-4404-4169-9b8c-c57017eb08fe.png)
+
+
+### Commands
+```
+cd /opt/openitc/frontend/plugins/TelegramModule
+git pull
+openitcockpit-update --cc
+rm -rf /opt/openitc/frontend/tmp/nagios/cache/nagios/models/*
+```
