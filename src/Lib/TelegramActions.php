@@ -302,6 +302,22 @@ class TelegramActions {
     }
 
     /**
+     * @param $telegram_chat_id
+     * @throws \TelegramBot\Api\Exception
+     * @throws \TelegramBot\Api\InvalidArgumentException
+     */
+    public function notifyChatAboutDeauthorization($telegram_chat_id) {
+        $this->bot->sendMessage(
+            $telegram_chat_id,
+            $this->getText('deleted_successfully'),
+            "Markdown",
+            false,
+            null,
+            null
+        );
+    }
+
+    /**
      * @param string $hostUuid
      * @param string $author
      * @return bool

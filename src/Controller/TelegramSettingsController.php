@@ -10,6 +10,7 @@ use App\Model\Table\SystemsettingsTable;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use TelegramModule\Lib\TelegramActions;
+use TelegramModule\Model\Table\TelegramChatsTable;
 use TelegramModule\Model\Table\TelegramContactsAccessKeysTable;
 use TelegramModule\Model\Table\TelegramSettingsTable;
 
@@ -31,10 +32,13 @@ class TelegramSettingsController extends AppController {
         $TelegramSettingsTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramSettings');
         $telegramSettings = $TelegramSettingsTable->getTelegramSettings();
 
-
         /** @var TelegramContactsAccessKeysTable $TelegramContactsAccessKeysTable */
         $TelegramContactsAccessKeysTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramContactsAccessKeys');
         $contactsAccessKeys = $TelegramContactsAccessKeysTable->getAllAsArray();
+
+        /** @var TelegramChatsTable $TelegramChatsTable */
+        $TelegramChatsTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramChats');
+        $chats = $TelegramChatsTable->getTelegramChats();
 
         /** @var $ContactsTable ContactsTable */
         $ContactsTable = TableRegistry::getTableLocator()->get('Contacts');
@@ -85,8 +89,9 @@ class TelegramSettingsController extends AppController {
             $this->set('telegramSettings', $telegramSettings);
             $this->set('contacts', $contacts);
             $this->set('contactsAccessKeys', $contactsAccessKeys);
+            $this->set('chats', $chats);
             $this->viewBuilder()->setOption('serialize', [
-                'telegramSettings', 'contacts', 'contactsAccessKeys'
+                'telegramSettings', 'contacts', 'contactsAccessKeys', 'chats'
             ]);
             return;
         }
@@ -183,6 +188,36 @@ class TelegramSettingsController extends AppController {
                         $this->set('contactsAccessKeys', $contactsAccessKeys);
                         $this->viewBuilder()->setOption('serialize', [
                             'contactsAccessKeys'
+                        ]);
+                    }
+                }
+            }
+        }
+    }
+
+    public function rmChat() {
+        if ($this->isAngularJsRequest()) {
+            if ($this->request->is('post')) {
+                $id = $this->request->getData('id');
+                if ($id !== null) {
+                    /** @var TelegramChatsTable $TelegramChatsTable */
+                    $TelegramChatsTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramChats');
+                    $chat = $TelegramChatsTable->get($id);
+
+                    /** @var TelegramSettingsTable $TelegramSettingsTable */
+                    $TelegramSettingsTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramSettings');
+
+                    if ($chat !== null) {
+                        $telegramSettingsEntity = $TelegramSettingsTable->getTelegramSettingsEntity();
+                        $TelegramActions = new TelegramActions($telegramSettingsEntity->get('token'));
+                        $TelegramActions->notifyChatAboutDeauthorization($chat->chat_id);
+
+                        $TelegramChatsTable->deleteOrFail($chat);
+
+                        $chats = $TelegramChatsTable->getTelegramChats();
+                        $this->set('chats', $chats);
+                        $this->viewBuilder()->setOption('serialize', [
+                            'chats'
                         ]);
                     }
                 }

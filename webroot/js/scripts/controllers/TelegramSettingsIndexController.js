@@ -11,6 +11,7 @@ angular.module('openITCOCKPIT')
         };
         $scope.contacts = [];
         $scope.contactsAccessKeys = [];
+        $scope.chats = [];
 
         $scope.hasError = null;
 
@@ -23,6 +24,7 @@ angular.module('openITCOCKPIT')
                 $scope.telegramSettings = result.data.telegramSettings;
                 $scope.contacts = result.data.contacts;
                 $scope.contactsAccessKeys = result.data.contactsAccessKeys;
+                $scope.chats = result.data.chats;
 
             }, function errorCallback(result){
                 if(result.status === 403){
@@ -103,7 +105,37 @@ angular.module('openITCOCKPIT')
                     $scope.errors = result.data.error;
                 }
             });
-        }
+        };
+
+        $scope.getContactForUuid = function(contact_uuid) {
+            for (const contact of $scope.contacts) {
+                if (contact.uuid === contact_uuid) {
+                    return contact;
+                }
+            }
+            return null;
+        };
+
+        $scope.deleteChat = function(id) {
+            $http.post("/telegram_module/TelegramSettings/rmChat.json?angular=true",
+                {
+                    'id': id
+                }
+            ).then(function(result){
+                if (result.data.chats) {
+                    $scope.chats = result.data.chats;
+                    NotyService.genericSuccess();
+                    $scope.errors = null;
+                } else {
+                    NotyService.genericError();
+                }
+            }, function errorCallback(result){
+                NotyService.genericError();
+                if(result.data.hasOwnProperty('error')){
+                    $scope.errors = result.data.error;
+                }
+            });
+        };
 
         $scope.load();
     });

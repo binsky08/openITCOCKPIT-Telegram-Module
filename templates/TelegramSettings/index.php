@@ -173,7 +173,7 @@
                     <div class="card margin-top-2" ng-repeat="contact in contacts">
                         <div class="card-body">
                             <div class="form-group">
-                                <span style="min-width: 200px;display: inline-block;">
+                                <span style="min-width: 350px;display: inline-block;">
                                     {{contact.name}}
                                 </span>
                                 <span ng-if="isContactAccessKeyGenerated(contact.uuid) == false">
@@ -184,13 +184,53 @@
                                     </a>
                                 </span>
                                 <span ng-if="isContactAccessKeyGenerated(contact.uuid) != false">
-                                    <code>
-                                        {{isContactAccessKeyGenerated(contact.uuid)}}
-                                    </code>
+                                    <code>{{isContactAccessKeyGenerated(contact.uuid)}}</code>
                                     <a class="btn btn-xs btn-danger mr-1 shadow-0 margin-left-5"
                                        ng-click="removeAccessKeyForContact(contact.uuid)"
                                        href="javascript:void(0);">
                                         <?= __('Delete key') ?>
+                                    </a>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xl-12">
+        <div id="panel-1" class="panel">
+            <div class="panel-hdr">
+                <div>
+                    <h2>
+                        <?php echo __('Registered Telegram chats'); ?>
+                    </h2>
+                </div>
+            </div>
+            <div class="panel-container show">
+                <div class="panel-content">
+                    <div class="card margin-top-2" ng-repeat="chat in chats">
+                        <div class="card-body">
+                            <div class="form-group">
+                                <span style="min-width: 350px;display: inline-block;">
+                                    Contact:
+                                    <?php if ($this->Acl->hasPermission('edit', 'contacts')): ?>
+                                        <a ui-sref="ContactsEdit({id: getContactForUuid(chat.contact_uuid).id})">
+                                            {{getContactForUuid(chat.contact_uuid).name}}
+                                        </a>
+                                    <?php else: ?>
+                                        {{getContactForUuid(chat.contact_uuid).name}}
+                                    <?php endif; ?>
+                                    &nbsp;| Telegram user: {{chat.started_from_username}}
+                                </span>
+                                <span>
+                                    <a class="btn btn-xs btn-danger mr-1 shadow-0"
+                                       ng-click="deleteChat(chat.id)"
+                                       href="javascript:void(0);">
+                                        <?= __('Delete chat / Revoke authorization') ?>
                                     </a>
                                 </span>
                             </div>
