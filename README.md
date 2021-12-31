@@ -72,6 +72,8 @@ openITCOCKPIT automatically set up the webhook for the bot with the given token.
 
 Notifications sent by the openITCOCKPIT Telegram Module can be received by any chat with a real telegram user or by channels.
 
+A Telegram chat gets only the notifications for a defined openITCOCKPIT contact. (identified by custom authentication codes)
+
 To start the interaction, search the bot username in the Telegram global search field and start a chat with your bot.
 
 After starting the chat you need to authorize yourself with an authentication code for a openITCOCKPIT Contact, that can be manually generated in the openITCOCKPIT Telegram configuration for Contacts containing a Telegram notification command. (type `/auth xxx` in the chat with your key as xxx)

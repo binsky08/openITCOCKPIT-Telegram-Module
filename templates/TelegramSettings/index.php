@@ -321,16 +321,19 @@
                             </h4>
                             <ul>
                                 <li>
-                                    <?= __('Notifications sent by the openITCOCKPIT telegram module can be received by any chat with a real telegram user or by channels.') ?>
+                                    <?= __('Notifications sent by the openITCOCKPIT Telegram Module can be received by any chat with a real telegram user or by channels.') ?>
+                                </li>
+                                <li>
+                                    <?= __('A Telegram chat gets only the notifications for a defined openITCOCKPIT contact. (identified by custom authentication codes)') ?>
                                 </li>
                                 <li>
                                     <?= __('To start the interaction, search the bot username in the Telegram global search field and start a chat with your bot.') ?>
                                 </li>
                                 <li>
-                                    <?= __('After starting the chat you need to authorize yourself with the API access key, that was auto generated in the openITCOCKPIT Telegram configuration. (type <code>/auth xxx</code> in the chat with your key as xxx)') ?>
+                                    <?= __('After starting the chat you need to authorize yourself with an authentication code for a openITCOCKPIT Contact, that can be manually generated in the openITCOCKPIT Telegram configuration for Contacts containing a Telegram notification command. (type <code>/auth xxx</code> in the chat with your key as xxx)') ?>
                                 </li>
                                 <li>
-                                    <?= __('If the authorization was successful, use the bot control command <code>/start</code> to enable openITCOCKPIT notifications.') ?>
+                                    <?= __('If the authorization was successful, use the bot control command <code>/start</code> to enable openITCOCKPIT notifications. Otherwise you will not receive any notifications.') ?>
                                 </li>
                                 <li>
                                     <?= __('With enabled two-way integration issues can be acknowledged by simply clicking the button for an action provided by the bot message.') ?>
@@ -340,7 +343,7 @@
 
                                 </li>
                                 <li>
-                                    <?= __('If your openITCOCKPIT is not reachable from the Internet, the built-in basic two-way integration calls up interactions cached by Telegram and processes them every minute. (Therefore, interactions with the bot can take up to a minute to process!)') ?>
+                                    <?= __('If your openITCOCKPIT is not reachable from the Internet, the built-in basic one-way integration calls up interactions cached by Telegram and processes them every minute. (Therefore, interactions with the bot can take up to a minute to process!)') ?>
                                 </li>
                                 <li>
                                     <?php echo sprintf(__('Run %s in bot chat to get more information about how to control the bot.'), '<code>/help</code>'); ?>
