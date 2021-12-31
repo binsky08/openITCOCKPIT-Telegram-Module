@@ -84,5 +84,26 @@ angular.module('openITCOCKPIT')
             });
         };
 
+        $scope.removeAccessKeyForContact = function(contact_uuid) {
+            $http.post("/telegram_module/TelegramSettings/rmKey.json?angular=true",
+                {
+                    'contact_uuid': contact_uuid
+                }
+            ).then(function(result){
+                if (result.data.contactsAccessKeys) {
+                    $scope.contactsAccessKeys = result.data.contactsAccessKeys;
+                    NotyService.genericSuccess();
+                    $scope.errors = null;
+                } else {
+                    NotyService.genericError();
+                }
+            }, function errorCallback(result){
+                NotyService.genericError();
+                if(result.data.hasOwnProperty('error')){
+                    $scope.errors = result.data.error;
+                }
+            });
+        }
+
         $scope.load();
     });

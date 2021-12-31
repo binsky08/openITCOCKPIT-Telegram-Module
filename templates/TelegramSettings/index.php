@@ -159,10 +159,12 @@
             <div class="panel-hdr">
                 <div>
                     <h2>
-                        <?php echo __('Enable Contacts for Telegram notifications'); ?>
+                        <?php echo __('Authentication codes for Telegram notification contacts'); ?>
                     </h2>
                     <div class="help-block margin-bottom-10">
-                        <?= __('Generate Telegram api access keys to authenticate as openITCOCKPIT Contact in the Telegram chat using the connected Telegram Bot.'); ?>
+                        <?= __('Generate authentication codes for openITCOCKPIT Contacts to use them to authenticate yourself in the Telegram chat using the connected Telegram bot.'); ?>
+                        <br>
+                        <?= __('As soon as a chat has been authenticated, the key can be deleted to prevent misuse.') ?>
                     </div>
                 </div>
             </div>
@@ -174,16 +176,22 @@
                                 <span style="min-width: 200px;display: inline-block;">
                                     {{contact.name}}
                                 </span>
-                                <span>
-                                    <a ng-if="isContactAccessKeyGenerated(contact.uuid) == false"
-                                       class="btn btn-xs btn-success mr-1 shadow-0"
+                                <span ng-if="isContactAccessKeyGenerated(contact.uuid) == false">
+                                    <a class="btn btn-xs btn-success mr-1 shadow-0"
                                        ng-click="generateAccessKeyForContact(contact.uuid)"
                                        href="javascript:void(0);">
-                                        <?= __('Enable') ?>
+                                        <?= __('Generate key') ?>
                                     </a>
-                                    <code ng-if="isContactAccessKeyGenerated(contact.uuid) != false">
+                                </span>
+                                <span ng-if="isContactAccessKeyGenerated(contact.uuid) != false">
+                                    <code>
                                         {{isContactAccessKeyGenerated(contact.uuid)}}
                                     </code>
+                                    <a class="btn btn-xs btn-danger mr-1 shadow-0 margin-left-5"
+                                       ng-click="removeAccessKeyForContact(contact.uuid)"
+                                       href="javascript:void(0);">
+                                        <?= __('Delete key') ?>
+                                    </a>
                                 </span>
                             </div>
                         </div>
