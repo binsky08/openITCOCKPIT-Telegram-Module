@@ -77,13 +77,6 @@ class TelegramChatsTable extends Table {
      */
     public function getTelegramChats() {
         $result = $this->find()
-            ->select([
-                'id',
-                'enabled',
-                'contact_uuid',
-                'chat_id',
-                'started_from_username'
-            ])
             ->disableHydration()
             ->all();
 

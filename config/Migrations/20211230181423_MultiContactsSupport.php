@@ -61,10 +61,11 @@ class MultiContactsSupport extends AbstractMigration {
 
         $chats = $TelegramChatsTable->getTelegramChats();
         $infoContacts = $ContactsTable->getAllInfoContacts();
-        if (isset($infoContacts[0])){
+        if (isset($infoContacts[0])) {
             foreach ($chats as $chat) {
-                $chat['contact_uuid'] = $infoContacts[0]['uuid'];
-                $TelegramChatsTable->save($chat);
+                $Chat = $TelegramChatsTable->get($chat['id']);
+                $Chat->set('contact_uuid', $infoContacts[0]['uuid']);
+                $TelegramChatsTable->save($Chat);
             }
         }
     }
