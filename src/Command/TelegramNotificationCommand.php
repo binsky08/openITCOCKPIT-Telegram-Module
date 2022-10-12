@@ -214,10 +214,8 @@ class TelegramNotificationCommand extends Command {
                 $title = Emoji::speechBalloon() . ' ' . $title;
             }
 
-            return $this->sendMessage($title);
-        }
-
-        if ($this->isDowntimeStart()) {
+            $this->sendMessage($title);
+        } else if ($this->isDowntimeStart()) {
             $title = sprintf(
                 'Downtime started for [%s](%s/#!/hosts/browser/%s)',
                 $Host->getHostname(),
@@ -228,10 +226,8 @@ class TelegramNotificationCommand extends Command {
             if ($this->noEmoji === false) {
                 $title = Emoji::zzz() . ' ' . $title;
             }
-            return $this->sendMessage($title);
-        }
-
-        if ($this->isDowntimeEnd()) {
+            $this->sendMessage($title);
+        } else if ($this->isDowntimeEnd()) {
             $title = sprintf(
                 'Downtime end for [%s](%s/#!/hosts/browser/%s)',
                 $Host->getHostname(),
@@ -243,10 +239,8 @@ class TelegramNotificationCommand extends Command {
                 $title = Emoji::eightSpokedAsterisk() . ' ' . $title;
             }
 
-            return $this->sendMessage($title);
-        }
-
-        if ($this->isDowntimeCancelled()) {
+            $this->sendMessage($title);
+        } else if ($this->isDowntimeCancelled()) {
             $title = sprintf(
                 'Downtime cancelled for [%s](%s/#!/hosts/browser/%s)',
                 $Host->getHostname(),
@@ -257,10 +251,8 @@ class TelegramNotificationCommand extends Command {
             if ($this->noEmoji === false) {
                 $title = Emoji::wastebasket() . ' ' . $title;
             }
-            return $this->sendMessage($title);
-        }
-
-        if ($this->isFlappingStart()) {
+            $this->sendMessage($title);
+        } else if ($this->isFlappingStart()) {
             $title = sprintf(
                 'Flapping started on [%s](%s/#!/hosts/browser/%s)',
                 $Host->getHostname(),
@@ -268,10 +260,8 @@ class TelegramNotificationCommand extends Command {
                 $Host->getUuid()
             );
 
-            return $this->sendMessage($title);
-        }
-
-        if ($this->isFlappingStop()) {
+            $this->sendMessage($title);
+        } else if ($this->isFlappingStop()) {
             $title = sprintf(
                 'Flapping stopped on [%s](%s/#!/hosts/browser/%s)',
                 $Host->getHostname(),
@@ -279,10 +269,8 @@ class TelegramNotificationCommand extends Command {
                 $Host->getUuid()
             );
 
-            return $this->sendMessage($title);
-        }
-
-        if ($this->isFlappingDisabled()) {
+            $this->sendMessage($title);
+        } else if ($this->isFlappingDisabled()) {
             $title = sprintf(
                 'Disabled flap detection for [%s](%s/#!/hosts/browser/%s)',
                 $Host->getHostname(),
@@ -290,38 +278,38 @@ class TelegramNotificationCommand extends Command {
                 $Host->getUuid()
             );
 
-            return $this->sendMessage($title);
-        }
+            $this->sendMessage($title);
+        } else {
+            //Default notification
+            $title = sprintf(
+                '%s: [%s](%s/#!/hosts/browser/%s) is %s!',
+                $this->notificationtype,
+                $Host->getHostname(),
+                $this->baseUrl,
+                $Host->getUuid(),
+                $HoststatusIcon->getHumanState()
+            );
 
-        //Default notification
-        $title = sprintf(
-            '%s: [%s](%s/#!/hosts/browser/%s) is %s!',
-            $this->notificationtype,
-            $Host->getHostname(),
-            $this->baseUrl,
-            $Host->getUuid(),
-            $HoststatusIcon->getHumanState()
-        );
+            if ($this->noEmoji === false) {
+                $title = $HoststatusIcon->getEmoji() . ' ' . $title;
+            }
 
-        if ($this->noEmoji === false) {
-            $title = $HoststatusIcon->getEmoji() . ' ' . $title;
-        }
+            $text = $title . "\n" . $this->output;
 
-        $text = $title . "\n" . $this->output;
-
-        $InlineKeyboardMarkup = new InlineKeyboardMarkup([]);
-        if ($HoststatusIcon->getState() !== 0 && $this->telegramSettings->get('two_way')) {
-            $InlineKeyboardMarkup->setInlineKeyboard([
-                [
+            $InlineKeyboardMarkup = new InlineKeyboardMarkup([]);
+            if ($HoststatusIcon->getState() !== 0 && $this->telegramSettings->get('two_way')) {
+                $InlineKeyboardMarkup->setInlineKeyboard([
                     [
-                        'text'          => __d('oitc_console', "Click to acknowledge this issue."),
-                        'callback_data' => "ack_host_" . $Host->getUuid()
+                        [
+                            'text'          => __d('oitc_console', "Click to acknowledge this issue."),
+                            'callback_data' => "ack_host_" . $Host->getUuid()
+                        ]
                     ]
-                ]
-            ]);
-        }
+                ]);
+            }
 
-        $this->sendMessage($text, $InlineKeyboardMarkup);
+            $this->sendMessage($text, $InlineKeyboardMarkup);
+        }
     }
 
     private function sendServiceNotification(Host $Host, Service $Service) {
@@ -345,10 +333,8 @@ class TelegramNotificationCommand extends Command {
                 $title = Emoji::speechBalloon() . ' ' . $title;
             }
 
-            return $this->sendMessage($title);
-        }
-
-        if ($this->isDowntimeStart()) {
+            $this->sendMessage($title);
+        } else if ($this->isDowntimeStart()) {
             $title = sprintf(
                 'Downtime start for service [%s](%s/#!/hosts/browser/%s)/[%s](%s/#!/services/browser/%s)',
                 $Host->getHostname(),
@@ -363,10 +349,8 @@ class TelegramNotificationCommand extends Command {
                 $title = Emoji::zzz() . ' ' . $title;
             }
 
-            return $this->sendMessage($title);
-        }
-
-        if ($this->isDowntimeEnd()) {
+            $this->sendMessage($title);
+        } else if ($this->isDowntimeEnd()) {
             $title = sprintf(
                 'Downtime end for service [%s](%s/#!/hosts/browser/%s)/[%s](%s/#!/services/browser/%s)',
                 $Host->getHostname(),
@@ -381,10 +365,8 @@ class TelegramNotificationCommand extends Command {
                 $title = Emoji::eightSpokedAsterisk() . ' ' . $title;
             }
 
-            return $this->sendMessage($title);
-        }
-
-        if ($this->isDowntimeCancelled()) {
+            $this->sendMessage($title);
+        } else if ($this->isDowntimeCancelled()) {
             $title = sprintf(
                 'Downtime cancelled for service [%s](%s/#!/hosts/browser/%s)/[%s](%s/#!/services/browser/%s)',
                 $Host->getHostname(),
@@ -399,10 +381,8 @@ class TelegramNotificationCommand extends Command {
                 $title = Emoji::wastebasket() . ' ' . $title;
             }
 
-            return $this->sendMessage($title);
-        }
-
-        if ($this->isFlappingStart()) {
+            $this->sendMessage($title);
+        } else if ($this->isFlappingStart()) {
             $title = sprintf(
                 'Flapping started on [%s](%s/#!/hosts/browser/%s)/[%s](%s/#!/services/browser/%s)',
                 $Host->getHostname(),
@@ -413,10 +393,8 @@ class TelegramNotificationCommand extends Command {
                 $Service->getUuid()
             );
 
-            return $this->sendMessage($title);
-        }
-
-        if ($this->isFlappingStop()) {
+            $this->sendMessage($title);
+        } else if ($this->isFlappingStop()) {
             $title = sprintf(
                 'Flapping stopped on [%s](%s/#!/hosts/browser/%s)/[%s](%s/#!/services/browser/%s)',
                 $Host->getHostname(),
@@ -427,10 +405,8 @@ class TelegramNotificationCommand extends Command {
                 $Service->getUuid()
             );
 
-            return $this->sendMessage($title);
-        }
-
-        if ($this->isFlappingDisabled()) {
+            $this->sendMessage($title);
+        } else if ($this->isFlappingDisabled()) {
             $title = sprintf(
                 'Disabled flap detection for [%s](%s/#!/hosts/browser/%s)/[%s](%s/#!/services/browser/%s)',
                 $Host->getHostname(),
@@ -441,41 +417,41 @@ class TelegramNotificationCommand extends Command {
                 $Service->getUuid()
             );
 
-            return $this->sendMessage($title);
-        }
+            $this->sendMessage($title);
+        } else {
+            //Default notification
+            $title = sprintf(
+                '%s: [%s](%s/#!/services/browser/%s) on [%s](%s/#!/hosts/browser/%s) is %s!',
+                $this->notificationtype,
+                $Service->getServicename(),
+                $this->baseUrl,
+                $Service->getUuid(),
+                $Host->getHostname(),
+                $this->baseUrl,
+                $Host->getUuid(),
+                $ServicestatusIcon->getHumanState()
+            );
 
-        //Default notification
-        $title = sprintf(
-            '%s: [%s](%s/#!/services/browser/%s) on [%s](%s/#!/hosts/browser/%s) is %s!',
-            $this->notificationtype,
-            $Service->getServicename(),
-            $this->baseUrl,
-            $Service->getUuid(),
-            $Host->getHostname(),
-            $this->baseUrl,
-            $Host->getUuid(),
-            $ServicestatusIcon->getHumanState()
-        );
+            if ($this->noEmoji === false) {
+                $title = $ServicestatusIcon->getEmoji() . ' ' . $title;
+            }
 
-        if ($this->noEmoji === false) {
-            $title = $ServicestatusIcon->getEmoji() . ' ' . $title;
-        }
+            $text = $title . "\n" . $this->output;
 
-        $text = $title . "\n" . $this->output;
-
-        $InlineKeyboardMarkup = new InlineKeyboardMarkup([]);
-        if ($ServicestatusIcon->getState() !== 0 && $this->telegramSettings->get('two_way')) {
-            $InlineKeyboardMarkup->setInlineKeyboard([
-                [
+            $InlineKeyboardMarkup = new InlineKeyboardMarkup([]);
+            if ($ServicestatusIcon->getState() !== 0 && $this->telegramSettings->get('two_way')) {
+                $InlineKeyboardMarkup->setInlineKeyboard([
                     [
-                        'text'          => __d('oitc_console', "Click to acknowledge this issue."),
-                        'callback_data' => "ack_service_" . $Service->getUuid()
+                        [
+                            'text'          => __d('oitc_console', "Click to acknowledge this issue."),
+                            'callback_data' => "ack_service_" . $Service->getUuid()
+                        ]
                     ]
-                ]
-            ]);
-        }
+                ]);
+            }
 
-        $this->sendMessage($text, $InlineKeyboardMarkup);
+            $this->sendMessage($text, $InlineKeyboardMarkup);
+        }
     }
 
     private function sendMessage($text, $InlineKeyboardMarkup = null) {
