@@ -1,5 +1,5 @@
 {
-    "name": "open-itcockpit/TelegramModule",
+    "name": "open-itcockpit/telegram-module",
     "description": "TelegramModule plugin for openITCOCKPIT",
     "type": "cakephp-plugin",
     "license": "MIT",
