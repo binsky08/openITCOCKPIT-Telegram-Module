@@ -29,6 +29,15 @@ class InstallSeed extends AbstractSeed {
         //Commands
         $table = $this->table('commands');
 
+        //Migrate wrong typed host notification command from host-notifiy-by-telegram to host-notify-by-telegram
+        $this->getAdapter()->getQueryBuilder()->update($table->getName())
+            ->set('name', 'host-notify-by-telegram')
+            ->where([
+                'command_type' => NOTIFICATION_COMMAND,
+                'name'         => 'host-notifiy-by-telegram'
+            ])
+            ->execute();
+
         $data = [
             [
                 'name'         => 'host-notify-by-telegram',
