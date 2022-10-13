@@ -31,7 +31,7 @@ class InstallSeed extends AbstractSeed {
 
         $data = [
             [
-                'name'         => 'host-notifiy-by-telegram',
+                'name'         => 'host-notify-by-telegram',
                 'command_line' => '/opt/openitc/frontend/bin/cake TelegramModule.TelegramNotification --type Host --notificationtype $NOTIFICATIONTYPE$ --hostuuid "$HOSTNAME$" --state "$HOSTSTATEID$" --output "$HOSTOUTPUT$" --ackauthor "$NOTIFICATIONAUTHOR$" --ackcomment "$NOTIFICATIONCOMMENT$" --contactuuid "$CONTACTNAME$"',
                 'command_type' => NOTIFICATION_COMMAND,
                 'human_args'   => null,
