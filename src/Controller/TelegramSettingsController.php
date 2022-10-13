@@ -67,12 +67,12 @@ class TelegramSettingsController extends AppController {
 
         /** @var CommandsTable $CommandsTable */
         $CommandsTable = TableRegistry::getTableLocator()->get('Commands');
-        $telegramHostNotificationCommand = $CommandsTable->getCommandByName('host-notifiy-by-telegram');
-        $telegramServiceNotificationCommand = $CommandsTable->getCommandByName('service-notifiy-by-telegram');
+        $telegramHostNotificationCommand = $CommandsTable->getCommandByName('host-notify-by-telegram', false, false);
+        $telegramServiceNotificationCommand = $CommandsTable->getCommandByName('service-notify-by-telegram', false, false);
 
         foreach ($allContacts as $contact) {
-            if (in_array($telegramHostNotificationCommand['Command'][0]['id'], Hash::extract($contact, 'host_commands.{n}.id')) ||
-                in_array($telegramServiceNotificationCommand['Command'][0]['id'], Hash::extract($contact, 'service_commands.{n}.id'))) {
+            if (in_array($telegramHostNotificationCommand[0]['id'], Hash::extract($contact, 'host_commands.{n}.id')) ||
+                in_array($telegramServiceNotificationCommand[0]['id'], Hash::extract($contact, 'service_commands.{n}.id'))) {
                 $contacts[] = $contact;
             }
         }
