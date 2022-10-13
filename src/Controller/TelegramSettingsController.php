@@ -40,7 +40,7 @@ class TelegramSettingsController extends AppController {
         $TelegramChatsTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramChats');
         $chats = $TelegramChatsTable->getTelegramChats();
 
-        /** @var $ContactsTable ContactsTable */
+        /** @var ContactsTable $ContactsTable */
         $ContactsTable = TableRegistry::getTableLocator()->get('Contacts');
         $contacts = [];
         /*$contactsQuery = $ContactsTable->find()
@@ -65,18 +65,17 @@ class TelegramSettingsController extends AppController {
             ->disableHydration()
             ->all();
 
-        /** @var $CommandsTable CommandsTable */
+        /** @var CommandsTable $CommandsTable */
         $CommandsTable = TableRegistry::getTableLocator()->get('Commands');
-        $telegramHostNotificationCommand = $CommandsTable->getCommandByName('host-notifiy-by-telegram');
-        $telegramServiceNotificationCommand = $CommandsTable->getCommandByName('service-notifiy-by-telegram');
+        $telegramHostNotificationCommand = $CommandsTable->getCommandByName('host-notify-by-telegram', false, false);
+        $telegramServiceNotificationCommand = $CommandsTable->getCommandByName('service-notify-by-telegram', false, false);
 
         foreach ($allContacts as $contact) {
-            if (in_array($telegramHostNotificationCommand['Command'][0]['id'], Hash::extract($contact, 'host_commands.{n}.id')) ||
-                in_array($telegramServiceNotificationCommand['Command'][0]['id'], Hash::extract($contact, 'service_commands.{n}.id'))) {
+            if (in_array($telegramHostNotificationCommand[0]['id'], Hash::extract($contact, 'host_commands.{n}.id')) ||
+                in_array($telegramServiceNotificationCommand[0]['id'], Hash::extract($contact, 'service_commands.{n}.id'))) {
                 $contacts[] = $contact;
             }
         }
-
 
         if ($telegramSettings->get('external_webhook_domain') == "") {
             /** @var SystemsettingsTable $SystemsettingsTable */
@@ -136,7 +135,7 @@ class TelegramSettingsController extends AppController {
             if ($this->request->is('post')) {
                 $contact_uuid = $this->request->getData('contact_uuid');
                 if ($contact_uuid !== null) {
-                    /** @var $ContactsTable ContactsTable */
+                    /** @var ContactsTable $ContactsTable */
                     $ContactsTable = TableRegistry::getTableLocator()->get('Contacts');
 
                     $query = $ContactsTable->find()
@@ -168,7 +167,7 @@ class TelegramSettingsController extends AppController {
             if ($this->request->is('post')) {
                 $contact_uuid = $this->request->getData('contact_uuid');
                 if ($contact_uuid !== null) {
-                    /** @var $ContactsTable ContactsTable */
+                    /** @var ContactsTable $ContactsTable */
                     $ContactsTable = TableRegistry::getTableLocator()->get('Contacts');
 
                     $query = $ContactsTable->find()

@@ -29,9 +29,18 @@ class InstallSeed extends AbstractSeed {
         //Commands
         $table = $this->table('commands');
 
+        //Migrate wrong typed host notification command from host-notifiy-by-telegram to host-notify-by-telegram
+        $this->getAdapter()->getQueryBuilder()->update($table->getName())
+            ->set('name', 'host-notify-by-telegram')
+            ->where([
+                'command_type' => NOTIFICATION_COMMAND,
+                'name'         => 'host-notifiy-by-telegram'
+            ])
+            ->execute();
+
         $data = [
             [
-                'name'         => 'host-notifiy-by-telegram',
+                'name'         => 'host-notify-by-telegram',
                 'command_line' => '/opt/openitc/frontend/bin/cake TelegramModule.TelegramNotification --type Host --notificationtype $NOTIFICATIONTYPE$ --hostuuid "$HOSTNAME$" --state "$HOSTSTATEID$" --output "$HOSTOUTPUT$" --ackauthor "$NOTIFICATIONAUTHOR$" --ackcomment "$NOTIFICATIONCOMMENT$" --contactuuid "$CONTACTNAME$"',
                 'command_type' => NOTIFICATION_COMMAND,
                 'human_args'   => null,
