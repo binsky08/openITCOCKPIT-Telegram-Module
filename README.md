@@ -1,5 +1,15 @@
 # TelegramModule plugin for openITCOCKPIT 4
 
+![image](https://github.com/binsky08/openITCOCKPIT-Telegram-Module/assets/30630233/f1c2da54-cf3c-44e8-b083-1ad5726e13ca)
+
+## Features
+- Receive notifications in Telegram as usual based on openITCOCKPIT contacts
+- Multiple Telegram connections for different openITCOCKPIT contacts possible
+- Notifications sent by the module can be received by any chat with a real telegram user or by channels
+- Acknowledge issues with a button in the bot message (optional with enabled two-way integration)
+
+Read [Usage](#usage) for more information
+
 ## Installation
 
 ### Latest version from GitHub
