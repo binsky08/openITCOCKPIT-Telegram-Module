@@ -15,7 +15,6 @@ Read [Usage](#usage) for more information
 ### Latest version from GitHub
 - Clone the module contents into /opt/openitc/frontend/plugins/TelegramModule
 - Run `composer install` in /opt/openitc/frontend/plugins/TelegramModule
-- Edit `/opt/openitc/frontend/src/Lib/PluginManager.php`
 - Run `openitcockpit-update --cc`
 
 #### Commands step by step:
@@ -26,22 +25,10 @@ cd TelegramModule
 
 apt-get install composer
 composer install
+openitcockpit-update --cc
 ```
 
-Edit `/opt/openitc/frontend/src/Lib/PluginManager.php`
-
-Add this code snippet at line 91:
-```php
-if (is_file(PLUGIN . $moduleName . DS . 'vendor/autoload.php')) {
-    require PLUGIN . $moduleName . DS . 'vendor/autoload.php';
-}
-```
-
-After it the file should look like this
-![oitc-tg-pm-snippet](https://user-images.githubusercontent.com/30630233/105217488-35a02400-5b54-11eb-8d4c-74ef18505c7a.png)
-
-Run `openitcockpit-update --cc`
-
+Note for existing installations: the customization of `/opt/openitc/frontend/src/Lib/PluginManager.php` is no longer needed!
 
 ## Configuration
 
@@ -101,6 +88,7 @@ Run `/help` in bot chat to get more information about how to control the bot.
 ## Update
 
 - Extract the current release archive over the existing TelegramModule folder or pull from the main branch
+- Install dependencies
 - Run an openitcockpit-update
 - Make sure the nagios model cache is cleared (not in openitcockpit-update implemented yet)
 - Apply new user roles if required
@@ -113,6 +101,7 @@ Run `/help` in bot chat to get more information about how to control the bot.
 ```
 cd /opt/openitc/frontend/plugins/TelegramModule
 git pull
+composer install
 openitcockpit-update --cc
 rm -rf /opt/openitc/frontend/tmp/nagios/cache/nagios/models/*
 ```

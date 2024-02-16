@@ -2,6 +2,8 @@
 
 namespace TelegramModule\Lib;
 
+// require manual autoload for core-called files, since openitcockpit core does not autoload plugin dependencies
+require_once dirname(__FILE__) . '/../../vendor/autoload.php';
 
 use App\Model\Table\HostsTable;
 use App\Model\Table\ProxiesTable;
