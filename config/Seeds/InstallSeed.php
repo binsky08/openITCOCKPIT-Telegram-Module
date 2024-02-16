@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Cake\Datasource\ConnectionManager;
 use Migrations\AbstractSeed;
 
 /**
@@ -13,7 +14,11 @@ use Migrations\AbstractSeed;
  * Apply:
  * oitc migrations seed -p TelegramModule
  */
-class InstallSeed extends AbstractSeed {
+class InstallSeed extends AbstractSeed
+{
+    private const COMMANDS_TABLE_NAME = 'commands';
+    private const CRONJOBS_TABLE_NAME = 'cronjobs';
+
     /**
      * Run Method.
      *
@@ -24,13 +29,13 @@ class InstallSeed extends AbstractSeed {
      *
      * @return void
      */
-    public function run(): void {
-
-        //Commands
-        $table = $this->table('commands');
+    public function run(): void
+    {
+        /** @var \Cake\Database\Connection $connection */
+        $connection = ConnectionManager::get('default');
 
         //Migrate wrong typed host notification command from host-notifiy-by-telegram to host-notify-by-telegram
-        $this->getAdapter()->getQueryBuilder()->update($table->getName())
+        $connection->updateQuery(self::COMMANDS_TABLE_NAME)
             ->set('name', 'host-notify-by-telegram')
             ->where([
                 'command_type' => NOTIFICATION_COMMAND,
@@ -59,10 +64,7 @@ class InstallSeed extends AbstractSeed {
 
         //Check if records exists
         foreach ($data as $index => $record) {
-            $QueryBuilder = $this->getAdapter()->getQueryBuilder();
-
-            $stm = $QueryBuilder->select('*')
-                ->from($table->getName())
+            $stm = $connection->selectQuery(['id'], self::COMMANDS_TABLE_NAME)
                 ->where([
                     'command_type' => NOTIFICATION_COMMAND,
                     'name'         => $record['name']
@@ -71,10 +73,9 @@ class InstallSeed extends AbstractSeed {
             $result = $stm->fetchAll();
 
             if (empty($result)) {
-                $table->insert($record)->save();
+                $connection->insertQuery(self::COMMANDS_TABLE_NAME, $record)->execute();
             } else {
-                $QueryBuilder
-                    ->update($table->getName())
+                $connection->updateQuery(self::COMMANDS_TABLE_NAME)
                     ->where([
                         'command_type' => NOTIFICATION_COMMAND,
                         'name'         => $record['name']
@@ -84,9 +85,7 @@ class InstallSeed extends AbstractSeed {
             }
         }
 
-        //Cronjobs
-        $table = $this->table('cronjobs');
-
+        //Cronjob
         $data = [
             [
                 'task'     => 'TelegramProcessUpdates',
@@ -98,10 +97,7 @@ class InstallSeed extends AbstractSeed {
 
         //Check if records exists
         foreach ($data as $index => $record) {
-            $QueryBuilder = $this->getAdapter()->getQueryBuilder();
-
-            $stm = $QueryBuilder->select('*')
-                ->from($table->getName())
+            $stm = $connection->selectQuery(['id'], self::CRONJOBS_TABLE_NAME)
                 ->where([
                     'plugin' => $record['plugin'],
                     'task'   => $record['task']
@@ -110,7 +106,7 @@ class InstallSeed extends AbstractSeed {
             $result = $stm->fetchAll();
 
             if (empty($result)) {
-                $table->insert($record)->save();
+                $connection->insertQuery(self::CRONJOBS_TABLE_NAME, $record)->execute();
             }
         }
     }
