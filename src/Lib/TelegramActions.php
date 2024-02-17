@@ -14,110 +14,127 @@ use itnovum\openITCOCKPIT\Core\System\Gearman;
 use itnovum\openITCOCKPIT\Exceptions\HostNotFoundException;
 use itnovum\openITCOCKPIT\Exceptions\ServiceNotFoundException;
 use TelegramBot\Api\BotApi;
+use TelegramBot\Api\Exception;
+use TelegramBot\Api\InvalidArgumentException;
+use TelegramBot\Api\Types\CallbackQuery;
 use TelegramBot\Api\Types\Update;
 use TelegramModule\Model\Table\TelegramChatsTable;
 use TelegramModule\Model\Table\TelegramContactsAccessKeysTable;
 use TelegramModule\Model\Table\TelegramSettingsTable;
 
-class TelegramActions {
+class TelegramActions
+{
 
     /** @var TelegramChatsTable */
-    private $TelegramChatsTable;
+    private $telegramChatsTable;
 
     /** @var TelegramSettingsTable */
-    private $TelegramSettingsTable;
+    private $telegramSettingsTable;
 
     /** @var TelegramContactsAccessKeysTable */
-    private $TelegramContactsAccessKeysTable;
+    private $telegramContactsAccessKeysTable;
 
     private $telegramSettings = [];
     private $proxySettings = [];
     private $updateOffset = 0;
     private $token = '';
 
+    /** @var BotApi $bot */
+    private $bot;
+
     /**
-     * @var BotApi
+     * @throws \Exception
      */
-    private $bot = BotApi::class;
+    public function __construct(string $tokenOverwrite = null)
+    {
+        $this->telegramChatsTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramChats');
+        $this->telegramSettingsTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramSettings');
+        $this->telegramContactsAccessKeysTable = TableRegistry::getTableLocator()->get(
+            'TelegramModule.TelegramContactsAccessKeys'
+        );
 
-    public function __construct(string $tokenOverwrite = null) {
-        $this->TelegramChatsTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramChats');
-        $this->TelegramSettingsTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramSettings');
-        $this->TelegramContactsAccessKeysTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramContactsAccessKeys');
+        $this->telegramSettings = $this->telegramSettingsTable->getTelegramSettings();
 
-        $this->telegramSettings = $this->TelegramSettingsTable->getTelegramSettings();
-
-        /** @var ProxiesTable $ProxiesTable */
-        $ProxiesTable = TableRegistry::getTableLocator()->get('Proxies');
-        $this->proxySettings = $ProxiesTable->getSettings();
+        /** @var ProxiesTable $proxiesTable */
+        $proxiesTable = TableRegistry::getTableLocator()->get('Proxies');
+        $this->proxySettings = $proxiesTable->getSettings();
 
         $this->token = $tokenOverwrite != null ? $tokenOverwrite : $this->telegramSettings->get('token');
-        if (!$this->token || $this->token == '') {
+        if ($this->token && trim($this->token) !== '') {
+            $this->bot = new BotApi($this->token);
+
+            if ($this->telegramSettings->get('use_proxy') && $this->proxySettings['enabled'] == 1) {
+                $this->bot->setProxy(sprintf('%s:%s', $this->proxySettings['ipaddress'], $this->proxySettings['port']));
+            }
+
+            if ($this->telegramSettings->get('last_update_id') > 0) {
+                $this->updateOffset = $this->telegramSettings->get('last_update_id');
+            }
+        } else {
             echo __d('oitc_console', 'No telegram bot token configured!') . PHP_EOL;
-            return 1;
+            return null;
         }
 
-        $this->bot = new BotApi($this->token);
-
-        if ($this->telegramSettings->get('use_proxy') && $this->proxySettings['enabled'] == 1) {
-            $this->bot->setProxy(sprintf('%s:%s', $this->proxySettings['ipaddress'], $this->proxySettings['port']));
-        }
-
-        if ($this->telegramSettings->get('last_update_id') > 0) {
-            $this->updateOffset = $this->telegramSettings->get('last_update_id');
-        }
+        return $this;
     }
 
     /**
      * @return bool
      */
-    public function isTwoWayWebhookEnabled() {
+    public function isTwoWayWebhookEnabled(): bool
+    {
         return $this->telegramSettings->get('two_way') == 1;
     }
 
     /**
      * @param string $completeWebhookUrl
      * @return string
-     * @throws \TelegramBot\Api\Exception
+     * @throws Exception
      */
-    public function enableWebhook(string $completeWebhookUrl) {
+    public function enableWebhook(string $completeWebhookUrl): string
+    {
         return $this->bot->setWebhook($completeWebhookUrl);
     }
 
-    public function disableWebhook() {
+    /**
+     * @throws Exception
+     */
+    public function disableWebhook()
+    {
         $this->bot->deleteWebhook();
     }
 
     /**
-     * @return \Exception|\TelegramBot\Api\Exception|\TelegramBot\Api\InvalidArgumentException|Update[]
+     * @return \Exception|Exception|InvalidArgumentException|Update[]
      */
-    public function getUpdates() {
+    public function getUpdates()
+    {
         try {
             return $this->bot->getUpdates($this->getUpdateOffset() + 1);
-        } catch (\TelegramBot\Api\Exception | \TelegramBot\Api\InvalidArgumentException $exception) {
+        } catch (Exception|InvalidArgumentException $exception) {
             return $exception;
         }
     }
 
     /**
      * @param array $updateArray
-     * @return bool|Update
+     * @return Update
+     * @throws InvalidArgumentException
      */
-    public function parseUpdate(array $updateArray) {
-        $update = new Update();
-        $update = $update::fromResponse($updateArray);
-
-        return $update;
+    public function parseUpdate(array $updateArray): Update
+    {
+        return Update::fromResponse($updateArray);
     }
 
     /**
      * @param $updates
      * @throws HostNotFoundException
      * @throws ServiceNotFoundException
-     * @throws \TelegramBot\Api\Exception
-     * @throws \TelegramBot\Api\InvalidArgumentException
+     * @throws Exception
+     * @throws InvalidArgumentException
      */
-    public function processUpdates($updates) {
+    public function processUpdates($updates)
+    {
         foreach ($updates as $update) {
             $this->processUpdate($update);
         }
@@ -126,8 +143,11 @@ class TelegramActions {
             if ($this->telegramSettings->get('token') == '') {
                 $this->telegramSettings->set('token', $this->token);
             }
-            $this->TelegramSettingsTable->patchEntity($this->telegramSettings, ['last_update_id' => $this->getUpdateOffset()]);
-            $this->TelegramSettingsTable->save($this->telegramSettings);
+            $this->telegramSettingsTable->patchEntity(
+                $this->telegramSettings,
+                ['last_update_id' => $this->getUpdateOffset()]
+            );
+            $this->telegramSettingsTable->save($this->telegramSettings);
             if ($this->telegramSettings->hasErrors()) {
                 print_r($this->telegramSettings->getErrors());
             }
@@ -135,24 +155,35 @@ class TelegramActions {
     }
 
     /**
+     * Check if chat authorization of the given update is already present in database.
+     * If not, this will return false and sends out the welcome and auth info message.
      * @param Update $update
      * @return bool
-     * @throws \TelegramBot\Api\Exception
-     * @throws \TelegramBot\Api\InvalidArgumentException
+     * @throws Exception
+     * @throws InvalidArgumentException
      */
-    private function isChatAuthorized(Update $update) {
-        if ($this->TelegramChatsTable->existsByChatId($update->getMessage()->getChat()->getId())) {
+    private function isChatAuthorized(Update $update): bool
+    {
+        if ($this->telegramChatsTable->existsByChatId($update->getMessage()->getChat()->getId())) {
             return true;
         }
 
         $this->bot->sendMessage(
             $update->getMessage()->getChat()->getId(),
-            sprintf($this->getText('welcome'), $update->getMessage()->getFrom()->getFirstName(), $update->getMessage()->getFrom()->getLastName()),
+            sprintf(
+                $this->getText('welcome'),
+                $update->getMessage()->getFrom()->getFirstName(),
+                $update->getMessage()->getFrom()->getLastName()
+            ),
             "Markdown"
         );
         $this->bot->sendMessage(
             $update->getMessage()->getChat()->getId(),
-            sprintf($this->getText('auth'), $update->getMessage()->getFrom()->getFirstName(), $update->getMessage()->getFrom()->getLastName()),
+            sprintf(
+                $this->getText('auth'),
+                $update->getMessage()->getFrom()->getFirstName(),
+                $update->getMessage()->getFrom()->getLastName()
+            ),
             "Markdown"
         );
         return false;
@@ -162,50 +193,66 @@ class TelegramActions {
      * @param Update $update
      * @throws HostNotFoundException
      * @throws ServiceNotFoundException
-     * @throws \TelegramBot\Api\Exception
-     * @throws \TelegramBot\Api\InvalidArgumentException
+     * @throws Exception
+     * @throws InvalidArgumentException
      */
-    public function processUpdate(Update $update) {
+    public function processUpdate(Update $update)
+    {
         if ($this->updateOffset < $update->getUpdateId()) {
             $this->updateOffset = $update->getUpdateId();
         }
 
-        //print_r($update);
         if ($update->getMessage()) {
             switch (trim($update->getMessage()->getText())) {
                 case '/auth':
+                    // this is not the correct authentication command
+                    // send message to inform the user about the correct command
                     $this->bot->sendMessage(
                         $update->getMessage()->getChat()->getId(),
-                        sprintf($this->getText('auth'), $update->getMessage()->getFrom()->getFirstName(), $update->getMessage()->getFrom()->getLastName()),
+                        sprintf(
+                            $this->getText('auth'),
+                            $update->getMessage()->getFrom()->getFirstName(),
+                            $update->getMessage()->getFrom()->getLastName()
+                        ),
                         "Markdown"
                     );
                     break;
 
                 case '/start':
                     if ($this->isChatAuthorized($update)) {
-                        $TelegramChat = $this->TelegramChatsTable->getByChatId($update->getMessage()->getChat()->getId());
-                        $this->TelegramChatsTable->patchEntity($TelegramChat, ['enabled' => true]);
-
-                        $this->TelegramChatsTable->save($TelegramChat);
+                        $telegramChat = $this->telegramChatsTable->getByChatId(
+                            $update->getMessage()->getChat()->getId()
+                        );
+                        $this->telegramChatsTable->patchEntity($telegramChat, ['enabled' => true]);
+                        $this->telegramChatsTable->save($telegramChat);
 
                         $this->bot->sendMessage(
                             $update->getMessage()->getChat()->getId(),
-                            sprintf($this->getText('successfully_enabled'), $update->getMessage()->getFrom()->getFirstName(), $update->getMessage()->getFrom()->getLastName()),
+                            sprintf(
+                                $this->getText('successfully_enabled'),
+                                $update->getMessage()->getFrom()->getFirstName(),
+                                $update->getMessage()->getFrom()->getLastName()
+                            ),
                             "Markdown"
                         );
                     }
-
                     break;
 
                 case '/stop':
                     if ($this->isChatAuthorized($update)) {
-                        $TelegramChat = $this->TelegramChatsTable->getByChatId($update->getMessage()->getChat()->getId());
-                        $this->TelegramChatsTable->patchEntity($TelegramChat, ['enabled' => false]);
-                        $this->TelegramChatsTable->save($TelegramChat);
+                        $telegramChat = $this->telegramChatsTable->getByChatId(
+                            $update->getMessage()->getChat()->getId()
+                        );
+                        $this->telegramChatsTable->patchEntity($telegramChat, ['enabled' => false]);
+                        $this->telegramChatsTable->save($telegramChat);
 
                         $this->bot->sendMessage(
                             $update->getMessage()->getChat()->getId(),
-                            sprintf($this->getText('successfully_disabled'), $update->getMessage()->getFrom()->getFirstName(), $update->getMessage()->getFrom()->getLastName()),
+                            sprintf(
+                                $this->getText('successfully_disabled'),
+                                $update->getMessage()->getFrom()->getFirstName(),
+                                $update->getMessage()->getFrom()->getLastName()
+                            ),
                             "Markdown"
                         );
                     }
@@ -214,87 +261,156 @@ class TelegramActions {
                 case '/help':
                     $this->bot->sendMessage(
                         $update->getMessage()->getChat()->getId(),
-                        sprintf($this->getText('help'), $update->getMessage()->getFrom()->getFirstName(), $update->getMessage()->getFrom()->getLastName()),
+                        sprintf(
+                            $this->getText('help'),
+                            $update->getMessage()->getFrom()->getFirstName(),
+                            $update->getMessage()->getFrom()->getLastName()
+                        ),
                         "Markdown"
                     );
                     break;
 
                 case '/delete':
                     if ($this->isChatAuthorized($update)) {
-                        $TelegramChat = $this->TelegramChatsTable->getByChatId($update->getMessage()->getChat()->getId());
-                        $this->TelegramChatsTable->delete($TelegramChat);
+                        $telegramChat = $this->telegramChatsTable->getByChatId(
+                            $update->getMessage()->getChat()->getId()
+                        );
+                        $this->telegramChatsTable->delete($telegramChat);
 
                         $this->bot->sendMessage(
                             $update->getMessage()->getChat()->getId(),
-                            sprintf($this->getText('deleted_successfully'), $update->getMessage()->getFrom()->getFirstName(), $update->getMessage()->getFrom()->getLastName()),
+                            sprintf(
+                                $this->getText('deleted_successfully'),
+                                $update->getMessage()->getFrom()->getFirstName(),
+                                $update->getMessage()->getFrom()->getLastName()
+                            ),
                             "Markdown"
                         );
                     }
                     break;
-            }
 
-            if (str_starts_with(trim($update->getMessage()->getText()), '/auth ')) {
-                $providedAuthKey = str_replace('/auth ', '', trim($update->getMessage()->getText()));
-                $contactAccessKey = $this->TelegramContactsAccessKeysTable->getContactByAccessKey($providedAuthKey);
-                if ($contactAccessKey !== null) {
-                    if (!$this->TelegramChatsTable->existsByChatId($update->getMessage()->getChat()->getId())) {
-                        $startedFromUsername = $update->getMessage()->getFrom()->getUsername();
-                        if ($startedFromUsername == null) {
-                            // use definite existing first name as fallback if the telegram user has no username
-                            $startedFromUsername = $update->getMessage()->getFrom()->getFirstName();
-                        }
-                        $TelegramChat = $this->TelegramChatsTable->newEntity([
-                            'chat_id'               => $update->getMessage()->getChat()->getId(),
-                            'enabled'               => false,
-                            'started_from_username' => $startedFromUsername,
-                            'contact_uuid'          => $contactAccessKey->get('contact_uuid')
-                        ]);
-                        $this->TelegramChatsTable->save($TelegramChat);
-
-                        $this->bot->sendMessage(
-                            $update->getMessage()->getChat()->getId(),
-                            sprintf($this->getText('auth_successful'), $update->getMessage()->getFrom()->getFirstName(), $update->getMessage()->getFrom()->getLastName()),
-                            "Markdown"
-                        );
-                        $this->bot->sendMessage(
-                            $update->getMessage()->getChat()->getId(),
-                            sprintf($this->getText('help'), $update->getMessage()->getFrom()->getFirstName(), $update->getMessage()->getFrom()->getLastName()),
-                            "Markdown"
-                        );
+                default:
+                    if (str_starts_with(trim($update->getMessage()->getText()), '/auth ')) {
+                        $this->processAuthenticationMessage($update);
                     }
-                } else {
-                    $this->bot->sendMessage(
-                        $update->getMessage()->getChat()->getId(),
-                        sprintf($this->getText('auth_unsuccessful'), $update->getMessage()->getFrom()->getFirstName(), $update->getMessage()->getFrom()->getLastName()),
-                        "Markdown"
-                    );
-                }
             }
         }
 
-        if ($update->getCallbackQuery()) {
-            $callbackData = $update->getCallbackQuery()->getData();
+        $callbackQuery = $update->getCallbackQuery();
+        if ($callbackQuery) {
+            $this->processCallbackQueryData($callbackQuery);
+        }
+    }
 
-            if (str_starts_with($callbackData, 'ack_host_')) {
-                $full_ack_user_name = sprintf("%s %s", $update->getCallbackQuery()->getFrom()->getFirstName(), $update->getCallbackQuery()->getFrom()->getLastName());
-                if ($this->acknowledgeHost(str_replace('ack_host_', '', $callbackData), $full_ack_user_name)) {
-                    $this->bot->sendMessage(
-                        $update->getCallbackQuery()->getMessage()->getChat()->getId(),
-                        sprintf(__d('oitc_console', 'Successfully acknowledged by %s %s.'), $update->getCallbackQuery()->getMessage()->getChat()->getFirstName(), $update->getCallbackQuery()->getMessage()->getChat()->getLastName()),
-                        "Markdown",
-                        false,
-                        $update->getCallbackQuery()->getMessage()->getMessageId()
-                    );
+    /**
+     * @param Update $update
+     * @return void
+     * @throws Exception
+     * @throws InvalidArgumentException
+     */
+    private function processAuthenticationMessage(Update $update): void
+    {
+        $providedAuthKey = str_replace('/auth ', '', trim($update->getMessage()->getText()));
+        $contactAccessKey = $this->telegramContactsAccessKeysTable->getContactByAccessKey($providedAuthKey);
+        if ($contactAccessKey !== null) {
+            if (!$this->telegramChatsTable->existsByChatId($update->getMessage()->getChat()->getId())) {
+                $startedFromUsername = $update->getMessage()->getFrom()->getUsername();
+                if ($startedFromUsername == null) {
+                    // use definite existing first name as fallback if the telegram user has no username
+                    $startedFromUsername = $update->getMessage()->getFrom()->getFirstName();
                 }
-            } else if (str_starts_with($callbackData, 'ack_service_')) {
-                $full_ack_user_name = sprintf("%s %s", $update->getCallbackQuery()->getFrom()->getFirstName(), $update->getCallbackQuery()->getFrom()->getLastName());
-                if ($this->acknowledgeService(str_replace('ack_service_', '', $callbackData), $full_ack_user_name)) {
+                $telegramChat = $this->telegramChatsTable->newEntity([
+                    'chat_id'               => $update->getMessage()->getChat()->getId(),
+                    'enabled'               => false,
+                    'started_from_username' => $startedFromUsername,
+                    'contact_uuid'          => $contactAccessKey->get('contact_uuid')
+                ]);
+                $this->telegramChatsTable->save($telegramChat);
+
+                $this->bot->sendMessage(
+                    $update->getMessage()->getChat()->getId(),
+                    sprintf(
+                        $this->getText('auth_successful'),
+                        $update->getMessage()->getFrom()->getFirstName(),
+                        $update->getMessage()->getFrom()->getLastName()
+                    ),
+                    "Markdown"
+                );
+                $this->bot->sendMessage(
+                    $update->getMessage()->getChat()->getId(),
+                    sprintf(
+                        $this->getText('help'),
+                        $update->getMessage()->getFrom()->getFirstName(),
+                        $update->getMessage()->getFrom()->getLastName()
+                    ),
+                    "Markdown"
+                );
+            }
+        } else {
+            $this->bot->sendMessage(
+                $update->getMessage()->getChat()->getId(),
+                sprintf(
+                    $this->getText('auth_unsuccessful'),
+                    $update->getMessage()->getFrom()->getFirstName(),
+                    $update->getMessage()->getFrom()->getLastName()
+                ),
+                "Markdown"
+            );
+        }
+    }
+
+    /**
+     * @param CallbackQuery $callbackQuery
+     * @return void
+     * @throws Exception
+     * @throws HostNotFoundException
+     * @throws InvalidArgumentException
+     * @throws ServiceNotFoundException
+     */
+    public function processCallbackQueryData(CallbackQuery $callbackQuery): void
+    {
+        $callbackData = $callbackQuery->getData();
+
+        if (str_starts_with($callbackData, 'ack_host_')) {
+            $full_ack_user_name = sprintf(
+                "%s %s",
+                $callbackQuery->getFrom()->getFirstName(),
+                $callbackQuery->getFrom()->getLastName()
+            );
+            if ($this->acknowledgeHost(str_replace('ack_host_', '', $callbackData), $full_ack_user_name)) {
+                $this->bot->sendMessage(
+                    $callbackQuery->getMessage()->getChat()->getId(),
+                    sprintf(
+                        __d('oitc_console', 'Successfully acknowledged by %s %s.'),
+                        $callbackQuery->getMessage()->getChat()->getFirstName(),
+                        $callbackQuery->getMessage()->getChat()->getLastName()
+                    ),
+                    "Markdown",
+                    false,
+                    $callbackQuery->getMessage()->getMessageId()
+                );
+            }
+        } else {
+            if (str_starts_with($callbackData, 'ack_service_')) {
+                $full_ack_user_name = sprintf(
+                    "%s %s",
+                    $callbackQuery->getFrom()->getFirstName(),
+                    $callbackQuery->getFrom()->getLastName()
+                );
+                if ($this->acknowledgeService(
+                    str_replace('ack_service_', '', $callbackData),
+                    $full_ack_user_name
+                )) {
                     $this->bot->sendMessage(
-                        $update->getCallbackQuery()->getMessage()->getChat()->getId(),
-                        sprintf(__d('oitc_console', 'Successfully acknowledged by %s %s.'), $update->getCallbackQuery()->getMessage()->getChat()->getFirstName(), $update->getCallbackQuery()->getMessage()->getChat()->getLastName()),
+                        $callbackQuery->getMessage()->getChat()->getId(),
+                        sprintf(
+                            __d('oitc_console', 'Successfully acknowledged by %s %s.'),
+                            $callbackQuery->getMessage()->getChat()->getFirstName(),
+                            $callbackQuery->getMessage()->getChat()->getLastName()
+                        ),
                         "Markdown",
                         false,
-                        $update->getCallbackQuery()->getMessage()->getMessageId()
+                        $callbackQuery->getMessage()->getMessageId()
                     );
                 }
             }
@@ -304,16 +420,18 @@ class TelegramActions {
     /**
      * @return int|mixed|null
      */
-    public function getUpdateOffset() {
+    public function getUpdateOffset()
+    {
         return $this->updateOffset;
     }
 
     /**
      * @param $telegram_chat_id
-     * @throws \TelegramBot\Api\Exception
-     * @throws \TelegramBot\Api\InvalidArgumentException
+     * @throws Exception
+     * @throws InvalidArgumentException
      */
-    public function notifyChatAboutDeauthorization($telegram_chat_id) {
+    public function notifyChatAboutDeauthorization($telegram_chat_id)
+    {
         $this->bot->sendMessage(
             $telegram_chat_id,
             $this->getText('deleted_successfully'),
@@ -327,34 +445,32 @@ class TelegramActions {
     /**
      * @param string $hostUuid
      * @param string $author
-     * @return bool
-     * @throws HostNotFoundException
+     * @return bool whether host exists and ack was sent, or not
      */
-    private function acknowledgeHost(string $hostUuid, string $author) {
-        /** @var HostsTable $HostsTable */
-        $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
+    private function acknowledgeHost(string $hostUuid, string $author): bool
+    {
+        /** @var HostsTable $hostsTable */
+        $hostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
-        //Check if the host exists
+        // we don't need the host, just check if it exists in a simple way
         try {
-            $host = $HostsTable->getHostByUuid($hostUuid);
+            $hostsTable->getHostByUuid($hostUuid);
+
+            (new Gearman())->sendBackground('cmd_external_command', [
+                'command'     => 'ACKNOWLEDGE_HOST_PROBLEM',
+                'parameters'  => [
+                    'hostUuid'   => $hostUuid,
+                    'sticky'     => 1,
+                    'notify'     => 0, // do not enable
+                    'persistent' => 1,
+                    'author'     => $author,
+                    'comment'    => __('Issue got acknowledged by {0} via Telegram.', $author),
+                ],
+                'satelliteId' => null
+            ]);
         } catch (RecordNotFoundException $e) {
-            throw new HostNotFoundException('No host with given uuid found.');
+            return false;
         }
-
-        $GearmanClient = new Gearman();
-
-        $GearmanClient->sendBackground('cmd_external_command', [
-            'command'     => 'ACKNOWLEDGE_HOST_PROBLEM',
-            'parameters'  => [
-                'hostUuid'   => $hostUuid,
-                'sticky'     => 1,
-                'notify'     => 0, // do not enable
-                'persistent' => 1,
-                'author'     => $author,
-                'comment'    => __('Issue got acknowledged by {0} via Telegram.', $author),
-            ],
-            'satelliteId' => null
-        ]);
 
         return true;
     }
@@ -362,38 +478,36 @@ class TelegramActions {
     /**
      * @param string $serviceUuid
      * @param string $author
-     * @return bool
-     * @throws ServiceNotFoundException
+     * @return bool whether service exists and ack was sent, or not
      */
-    private function acknowledgeService(string $serviceUuid, string $author) {
-        /** @var HostsTable $HostsTable */
-        $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var ServicesTable $ServicesTable */
-        $ServicesTable = TableRegistry::getTableLocator()->get('Services');
+    private function acknowledgeService(string $serviceUuid, string $author): bool
+    {
+        /** @var HostsTable $hostsTable */
+        $hostsTable = TableRegistry::getTableLocator()->get('Hosts');
+        /** @var ServicesTable $servicesTable */
+        $servicesTable = TableRegistry::getTableLocator()->get('Services');
 
-        //Check if the service exists
+        // we don't need the service, just check if it exists in a simple way
         try {
-            $service = $ServicesTable->getServiceByUuid($serviceUuid);
-            $hostUuid = $HostsTable->getHostUuidById($service->get('host_id'));
+            $service = $servicesTable->getServiceByUuid($serviceUuid);
+            $hostUuid = $hostsTable->getHostUuidById($service->get('host_id'));
+
+            (new Gearman())->sendBackground('cmd_external_command', [
+                'command'     => 'ACKNOWLEDGE_SVC_PROBLEM',
+                'parameters'  => [
+                    'hostUuid'    => $hostUuid,
+                    'serviceUuid' => $serviceUuid,
+                    'sticky'      => 1,
+                    'notify'      => 0, // do not enable
+                    'persistent'  => 1,
+                    'author'      => $author,
+                    'comment'     => __('Issue got acknowledged by {0} via Telegram.', $author),
+                ],
+                'satelliteId' => null
+            ]);
         } catch (RecordNotFoundException $e) {
-            throw new ServiceNotFoundException('No service with given uuid found.');
+            return false;
         }
-
-        $GearmanClient = new Gearman();
-
-        $GearmanClient->sendBackground('cmd_external_command', [
-            'command'     => 'ACKNOWLEDGE_SVC_PROBLEM',
-            'parameters'  => [
-                'hostUuid'    => $hostUuid,
-                'serviceUuid' => $serviceUuid,
-                'sticky'      => 1,
-                'notify'      => 0, // do not enable
-                'persistent'  => 1,
-                'author'      => $author,
-                'comment'     => __('Issue got acknowledged by {0} via Telegram.', $author),
-            ],
-            'satelliteId' => null
-        ]);
 
         return true;
     }
@@ -402,7 +516,8 @@ class TelegramActions {
      * @param string $key
      * @return string
      */
-    public function getText(string $key) {
+    public function getText(string $key)
+    {
         switch ($key) {
             case 'welcome':
                 return __d('oitc_console', "Nice to see you %s %s");
@@ -411,23 +526,29 @@ class TelegramActions {
             case 'successfully_disabled':
                 return __d('oitc_console', "You have successfully disabled openITCOCKPIT notifications in this chat.");
             case 'auth':
-                return __d('oitc_console', "If you want to enable openITCOCKPIT notifications in this chat, you have to authorize yourself with the (in openITCOCKPIT) configured API access key.
-Use `/auth xxx` to authorize yourself. Replace xxx with the right API access key.");
+                return __d(
+                    'oitc_console',
+                    "If you want to enable openITCOCKPIT notifications in this chat, you have to authorize yourself with the (in openITCOCKPIT) configured API access key.
+Use `/auth xxx` to authorize yourself. Replace xxx with the right API access key."
+                );
             case 'auth_successful':
                 return __d('oitc_console', 'The authorization was successful. You are now able to use this bot :)');
             case 'auth_unsuccessful':
                 return __d('oitc_console', 'Unfortunately the authorization was unsuccessful.');
             case 'deleted_successfully':
-                return __d('oitc_console', 'Connection successfully deleted. To use this bot again, you will need to re-authorize it.');
+                return __d(
+                    'oitc_console',
+                    'Connection successfully deleted. To use this bot again, you will need to re-authorize it.'
+                );
             case 'delay':
-                $message = "
-_Note: Interactions with this bot are only processed every minute due to the missing webhook configuration. As a result, there may be slight delays in executing commands._";
-                if ($this->isTwoWayWebhookEnabled()) {
-                    return '';
-                }
-                return $message;
+                return __d(
+                    'oitc_console',
+                    '_Note: Interactions with this bot are only processed every minute due to the missing webhook configuration. As a result, there may be slight delays in executing commands._'
+                );
             case 'help':
-                return __d('oitc_console', "Here are some instructions and commands for using this bot.
+                return __d(
+                        'oitc_console',
+                        "Here are some instructions and commands for using this bot.
 
 *Bot control commands*:
 
@@ -435,7 +556,9 @@ _Note: Interactions with this bot are only processed every minute due to the mis
 `/start` enables openITCOCKPIT notifications
 `/stop` disables openITCOCKPIT notifications
 `/help` shows this help text again
-`/delete` deletes this bot connection in openITCOCKPIT" . $this->getText('delay'));
+`/delete` deletes this bot connection in openITCOCKPIT"
+                    ) .
+                    ($this->isTwoWayWebhookEnabled() ? '' : PHP_EOL . PHP_EOL . $this->getText('delay'));
         }
     }
 }
