@@ -43,6 +43,7 @@ class TelegramProcessUpdatesCommand extends Command
      * @throws HostNotFoundException
      * @throws InvalidArgumentException
      * @throws ServiceNotFoundException
+     * @throws \Exception
      */
     public function execute(Arguments $args, ConsoleIo $io)
     {

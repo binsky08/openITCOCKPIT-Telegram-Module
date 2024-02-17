@@ -300,7 +300,7 @@ class TelegramNotificationCommand extends Command {
             $text = $title . "\n" . $this->output;
 
             $InlineKeyboardMarkup = new InlineKeyboardMarkup([]);
-            if ($HoststatusIcon->getState() !== 0 && $this->telegramSettings->get('two_way')) {
+            if ($HoststatusIcon->getState() !== 0) {
                 $InlineKeyboardMarkup->setInlineKeyboard([
                     [
                         [
@@ -442,7 +442,7 @@ class TelegramNotificationCommand extends Command {
             $text = $title . "\n" . $this->output;
 
             $InlineKeyboardMarkup = new InlineKeyboardMarkup([]);
-            if ($ServicestatusIcon->getState() !== 0 && $this->telegramSettings->get('two_way')) {
+            if ($ServicestatusIcon->getState() !== 0) {
                 $InlineKeyboardMarkup->setInlineKeyboard([
                     [
                         [
