@@ -24,6 +24,7 @@ use TelegramModule\Model\Table\TelegramSettingsTable;
 
 class TelegramActions
 {
+    const DEFAULT_MESSAGE_PARSE_MODE = 'Markdown';
 
     /** @var TelegramChatsTable */
     private $telegramChatsTable;
@@ -171,20 +172,20 @@ class TelegramActions
         $this->bot->sendMessage(
             $update->getMessage()->getChat()->getId(),
             sprintf(
-                $this->getText('welcome'),
+                TelegramInfoMessages::getText(TelegramInfoMessages::MESSAGE_WELCOME),
                 $update->getMessage()->getFrom()->getFirstName(),
                 $update->getMessage()->getFrom()->getLastName()
             ),
-            "Markdown"
+            self::DEFAULT_MESSAGE_PARSE_MODE
         );
         $this->bot->sendMessage(
             $update->getMessage()->getChat()->getId(),
             sprintf(
-                $this->getText('auth'),
+                TelegramInfoMessages::getText(TelegramInfoMessages::MESSAGE_AUTH),
                 $update->getMessage()->getFrom()->getFirstName(),
                 $update->getMessage()->getFrom()->getLastName()
             ),
-            "Markdown"
+            self::DEFAULT_MESSAGE_PARSE_MODE
         );
         return false;
     }
@@ -210,11 +211,11 @@ class TelegramActions
                     $this->bot->sendMessage(
                         $update->getMessage()->getChat()->getId(),
                         sprintf(
-                            $this->getText('auth'),
+                            TelegramInfoMessages::getText(TelegramInfoMessages::MESSAGE_AUTH),
                             $update->getMessage()->getFrom()->getFirstName(),
                             $update->getMessage()->getFrom()->getLastName()
                         ),
-                        "Markdown"
+                        self::DEFAULT_MESSAGE_PARSE_MODE
                     );
                     break;
 
@@ -229,11 +230,11 @@ class TelegramActions
                         $this->bot->sendMessage(
                             $update->getMessage()->getChat()->getId(),
                             sprintf(
-                                $this->getText('successfully_enabled'),
+                                TelegramInfoMessages::getText(TelegramInfoMessages::MESSAGE_SUCCESSFULLY_ENABLED),
                                 $update->getMessage()->getFrom()->getFirstName(),
                                 $update->getMessage()->getFrom()->getLastName()
                             ),
-                            "Markdown"
+                            self::DEFAULT_MESSAGE_PARSE_MODE
                         );
                     }
                     break;
@@ -249,24 +250,25 @@ class TelegramActions
                         $this->bot->sendMessage(
                             $update->getMessage()->getChat()->getId(),
                             sprintf(
-                                $this->getText('successfully_disabled'),
+                                TelegramInfoMessages::getText(TelegramInfoMessages::MESSAGE_SUCCESSFULLY_DISABLED),
                                 $update->getMessage()->getFrom()->getFirstName(),
                                 $update->getMessage()->getFrom()->getLastName()
                             ),
-                            "Markdown"
+                            self::DEFAULT_MESSAGE_PARSE_MODE
                         );
                     }
                     break;
 
                 case '/help':
+                    $message = TelegramInfoMessages::getText(TelegramInfoMessages::MESSAGE_HELP);
+                    $message .= $this->isTwoWayWebhookEnabled() ?
+                        '' :
+                        PHP_EOL . PHP_EOL . TelegramInfoMessages::getText(TelegramInfoMessages::MESSAGE_DELAY);
+
                     $this->bot->sendMessage(
                         $update->getMessage()->getChat()->getId(),
-                        sprintf(
-                            $this->getText('help'),
-                            $update->getMessage()->getFrom()->getFirstName(),
-                            $update->getMessage()->getFrom()->getLastName()
-                        ),
-                        "Markdown"
+                        $message,
+                        self::DEFAULT_MESSAGE_PARSE_MODE
                     );
                     break;
 
@@ -280,11 +282,11 @@ class TelegramActions
                         $this->bot->sendMessage(
                             $update->getMessage()->getChat()->getId(),
                             sprintf(
-                                $this->getText('deleted_successfully'),
+                                TelegramInfoMessages::getText(TelegramInfoMessages::MESSAGE_DELETE_SUCCESSFUL),
                                 $update->getMessage()->getFrom()->getFirstName(),
                                 $update->getMessage()->getFrom()->getLastName()
                             ),
-                            "Markdown"
+                            self::DEFAULT_MESSAGE_PARSE_MODE
                         );
                     }
                     break;
@@ -330,31 +332,33 @@ class TelegramActions
                 $this->bot->sendMessage(
                     $update->getMessage()->getChat()->getId(),
                     sprintf(
-                        $this->getText('auth_successful'),
+                        TelegramInfoMessages::getText(TelegramInfoMessages::MESSAGE_AUTH_SUCCESSFUL),
                         $update->getMessage()->getFrom()->getFirstName(),
                         $update->getMessage()->getFrom()->getLastName()
                     ),
-                    "Markdown"
+                    self::DEFAULT_MESSAGE_PARSE_MODE
                 );
+
+                $message = TelegramInfoMessages::getText(TelegramInfoMessages::MESSAGE_HELP);
+                $message .= $this->isTwoWayWebhookEnabled() ?
+                    '' :
+                    PHP_EOL . PHP_EOL . TelegramInfoMessages::getText(TelegramInfoMessages::MESSAGE_DELAY);
+
                 $this->bot->sendMessage(
                     $update->getMessage()->getChat()->getId(),
-                    sprintf(
-                        $this->getText('help'),
-                        $update->getMessage()->getFrom()->getFirstName(),
-                        $update->getMessage()->getFrom()->getLastName()
-                    ),
-                    "Markdown"
+                    $message,
+                    self::DEFAULT_MESSAGE_PARSE_MODE
                 );
             }
         } else {
             $this->bot->sendMessage(
                 $update->getMessage()->getChat()->getId(),
                 sprintf(
-                    $this->getText('auth_unsuccessful'),
+                    TelegramInfoMessages::getText(TelegramInfoMessages::MESSAGE_AUTH_UNSUCCESSFUL),
                     $update->getMessage()->getFrom()->getFirstName(),
                     $update->getMessage()->getFrom()->getLastName()
                 ),
-                "Markdown"
+                self::DEFAULT_MESSAGE_PARSE_MODE
             );
         }
     }
@@ -385,7 +389,7 @@ class TelegramActions
                         $callbackQuery->getMessage()->getChat()->getFirstName(),
                         $callbackQuery->getMessage()->getChat()->getLastName()
                     ),
-                    "Markdown",
+                    self::DEFAULT_MESSAGE_PARSE_MODE,
                     false,
                     $callbackQuery->getMessage()->getMessageId()
                 );
@@ -408,7 +412,7 @@ class TelegramActions
                             $callbackQuery->getMessage()->getChat()->getFirstName(),
                             $callbackQuery->getMessage()->getChat()->getLastName()
                         ),
-                        "Markdown",
+                        self::DEFAULT_MESSAGE_PARSE_MODE,
                         false,
                         $callbackQuery->getMessage()->getMessageId()
                     );
@@ -434,8 +438,8 @@ class TelegramActions
     {
         $this->bot->sendMessage(
             $telegram_chat_id,
-            $this->getText('deleted_successfully'),
-            "Markdown",
+            TelegramInfoMessages::getText(TelegramInfoMessages::MESSAGE_DELETE_SUCCESSFUL),
+            self::DEFAULT_MESSAGE_PARSE_MODE,
             false,
             null,
             null
@@ -510,55 +514,5 @@ class TelegramActions
         }
 
         return true;
-    }
-
-    /**
-     * @param string $key
-     * @return string
-     */
-    public function getText(string $key)
-    {
-        switch ($key) {
-            case 'welcome':
-                return __d('oitc_console', "Nice to see you %s %s");
-            case 'successfully_enabled':
-                return __d('oitc_console', "You have successfully enabled openITCOCKPIT notifications in this chat.");
-            case 'successfully_disabled':
-                return __d('oitc_console', "You have successfully disabled openITCOCKPIT notifications in this chat.");
-            case 'auth':
-                return __d(
-                    'oitc_console',
-                    "If you want to enable openITCOCKPIT notifications in this chat, you have to authorize yourself with the (in openITCOCKPIT) configured API access key.
-Use `/auth xxx` to authorize yourself. Replace xxx with the right API access key."
-                );
-            case 'auth_successful':
-                return __d('oitc_console', 'The authorization was successful. You are now able to use this bot :)');
-            case 'auth_unsuccessful':
-                return __d('oitc_console', 'Unfortunately the authorization was unsuccessful.');
-            case 'deleted_successfully':
-                return __d(
-                    'oitc_console',
-                    'Connection successfully deleted. To use this bot again, you will need to re-authorize it.'
-                );
-            case 'delay':
-                return __d(
-                    'oitc_console',
-                    '_Note: Interactions with this bot are only processed every minute due to the missing webhook configuration. As a result, there may be slight delays in executing commands._'
-                );
-            case 'help':
-                return __d(
-                        'oitc_console',
-                        "Here are some instructions and commands for using this bot.
-
-*Bot control commands*:
-
-`/auth xxx` authorizes yourself to activate the bot usage
-`/start` enables openITCOCKPIT notifications
-`/stop` disables openITCOCKPIT notifications
-`/help` shows this help text again
-`/delete` deletes this bot connection in openITCOCKPIT"
-                    ) .
-                    ($this->isTwoWayWebhookEnabled() ? '' : PHP_EOL . PHP_EOL . $this->getText('delay'));
-        }
     }
 }
