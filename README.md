@@ -19,12 +19,11 @@ Read [Usage](#usage) for more information
 
 #### Commands step by step:
 ```bash
-cd /opt/openitc/frontend/plugins
-git clone https://github.com/binsky08/openITCOCKPIT-Telegram-Module TelegramModule
-cd TelegramModule
+git clone https://github.com/binsky08/openITCOCKPIT-Telegram-Module /opt/openitc/frontend/plugins/TelegramModule
 
 apt-get install composer
-composer install
+composer -d /opt/openitc/frontend/plugins/TelegramModule install
+
 openitcockpit-update --cc
 ```
 
@@ -90,7 +89,6 @@ Run `/help` in bot chat to get more information about how to control the bot.
 - Extract the current release archive over the existing TelegramModule folder or pull from the main branch
 - Install dependencies
 - Run an openitcockpit-update
-- Make sure the nagios model cache is cleared (not in openitcockpit-update implemented yet)
 - Apply new user roles if required
 - Refresh monitoring configuration in the openITCOCKPIT web frontend
 
@@ -99,9 +97,14 @@ Run `/help` in bot chat to get more information about how to control the bot.
 
 ### Commands
 ```
-cd /opt/openitc/frontend/plugins/TelegramModule
-git pull
-composer install
+git -C /opt/openitc/frontend/plugins/TelegramModule pull
+composer -d /opt/openitc/frontend/plugins/TelegramModule install
 openitcockpit-update --cc
-rm -rf /opt/openitc/frontend/tmp/nagios/cache/nagios/models/*
 ```
+
+## Troubleshooting
+- If you aren't using the two-way integration or switching from two-way to one-way, it could happen that the cronjob is not going to be executed by openITCOCKPIT.
+  - That problem should be solved after running it once manually: `oitc cronjobs -f -t TelegramProcessUpdates`
+  - Note that the cron job is not needed if you use a two-way setup of this plugin
+- It seems that you `/auth` command works, but you chat is not appearing in the openITCOCKPIT Telegram settings?
+  - At the moment it's required to have a Telegram username specified - set it and try it again
