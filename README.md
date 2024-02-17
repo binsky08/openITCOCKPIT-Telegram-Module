@@ -106,5 +106,3 @@ openitcockpit-update --cc
 - If you aren't using the two-way integration or switching from two-way to one-way, it could happen that the cronjob is not going to be executed by openITCOCKPIT.
   - That problem should be solved after running it once manually: `oitc cronjobs -f -t TelegramProcessUpdates`
   - Note that the cron job is not needed if you use a two-way setup of this plugin
-- It seems that you `/auth` command works, but you chat is not appearing in the openITCOCKPIT Telegram settings?
-  - At the moment it's required to have a Telegram username specified - set it and try it again

@@ -238,10 +238,15 @@ class TelegramActions {
                 $contactAccessKey = $this->TelegramContactsAccessKeysTable->getContactByAccessKey($providedAuthKey);
                 if ($contactAccessKey !== null) {
                     if (!$this->TelegramChatsTable->existsByChatId($update->getMessage()->getChat()->getId())) {
+                        $startedFromUsername = $update->getMessage()->getFrom()->getUsername();
+                        if ($startedFromUsername == null) {
+                            // use definite existing first name as fallback if the telegram user has no username
+                            $startedFromUsername = $update->getMessage()->getFrom()->getFirstName();
+                        }
                         $TelegramChat = $this->TelegramChatsTable->newEntity([
                             'chat_id'               => $update->getMessage()->getChat()->getId(),
                             'enabled'               => false,
-                            'started_from_username' => $update->getMessage()->getFrom()->getUsername(),
+                            'started_from_username' => $startedFromUsername,
                             'contact_uuid'          => $contactAccessKey->get('contact_uuid')
                         ]);
                         $this->TelegramChatsTable->save($TelegramChat);
