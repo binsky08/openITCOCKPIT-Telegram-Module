@@ -7,9 +7,13 @@ namespace TelegramModule\Controller;
 use App\Model\Table\CommandsTable;
 use App\Model\Table\ContactsTable;
 use App\Model\Table\SystemsettingsTable;
+use Cake\Datasource\ResultSetInterface;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
+use TelegramBot\Api\Exception;
+use TelegramBot\Api\InvalidArgumentException;
 use TelegramModule\Lib\TelegramActions;
+use TelegramModule\Model\Entity\TelegramSetting;
 use TelegramModule\Model\Table\TelegramChatsTable;
 use TelegramModule\Model\Table\TelegramContactsAccessKeysTable;
 use TelegramModule\Model\Table\TelegramSettingsTable;
@@ -17,31 +21,39 @@ use TelegramModule\Model\Table\TelegramSettingsTable;
 /**
  * TelegramSettings Controller
  *
- * @method \TelegramModule\Model\Entity\TelegramSetting[]|\Cake\Datasource\ResultSetInterface paginate($object = null, array $settings = [])
+ * @method TelegramSetting[]|ResultSetInterface paginate($object = null, array $settings = [])
  */
-class TelegramSettingsController extends AppController {
+class TelegramSettingsController extends AppController
+{
 
-    public function index() {
-
+    /**
+     * Show Telegram Settings / Configuration page.
+     * @throws Exception
+     * @throws \Exception
+     */
+    public function index()
+    {
         if (!$this->isAngularJsRequest()) {
             //Only ship html template
             return;
         }
 
-        /** @var TelegramSettingsTable $TelegramSettingsTable */
-        $TelegramSettingsTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramSettings');
-        $telegramSettings = $TelegramSettingsTable->getTelegramSettings();
+        /** @var TelegramSettingsTable $telegramSettingsTable */
+        $telegramSettingsTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramSettings');
+        $telegramSettings = $telegramSettingsTable->getTelegramSettings();
 
-        /** @var TelegramContactsAccessKeysTable $TelegramContactsAccessKeysTable */
-        $TelegramContactsAccessKeysTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramContactsAccessKeys');
-        $contactsAccessKeys = $TelegramContactsAccessKeysTable->getAllAsArray();
+        /** @var TelegramContactsAccessKeysTable $telegramContactsAccessKeysTable */
+        $telegramContactsAccessKeysTable = TableRegistry::getTableLocator()->get(
+            'TelegramModule.TelegramContactsAccessKeys'
+        );
+        $contactsAccessKeys = $telegramContactsAccessKeysTable->getAllAsArray();
 
-        /** @var TelegramChatsTable $TelegramChatsTable */
-        $TelegramChatsTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramChats');
-        $chats = $TelegramChatsTable->getTelegramChats();
+        /** @var TelegramChatsTable $telegramChatsTable */
+        $telegramChatsTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramChats');
+        $chats = $telegramChatsTable->getTelegramChats();
 
-        /** @var ContactsTable $ContactsTable */
-        $ContactsTable = TableRegistry::getTableLocator()->get('Contacts');
+        /** @var ContactsTable $contactsTable */
+        $contactsTable = TableRegistry::getTableLocator()->get('Contacts');
         $contacts = [];
         /*$contactsQuery = $ContactsTable->find()
             ->select([
@@ -55,7 +67,7 @@ class TelegramSettingsController extends AppController {
             $contacts = $contactsQuery->toArray();
         }*/
 
-        $allContacts = $ContactsTable->find()
+        $allContacts = $contactsTable->find()
             ->contain([
                 'Containers',
                 'HostCommands',
@@ -65,23 +77,33 @@ class TelegramSettingsController extends AppController {
             ->disableHydration()
             ->all();
 
-        /** @var CommandsTable $CommandsTable */
-        $CommandsTable = TableRegistry::getTableLocator()->get('Commands');
-        $telegramHostNotificationCommand = $CommandsTable->getCommandByName('host-notify-by-telegram', false, false);
-        $telegramServiceNotificationCommand = $CommandsTable->getCommandByName('service-notify-by-telegram', false, false);
+        /** @var CommandsTable $commandsTable */
+        $commandsTable = TableRegistry::getTableLocator()->get('Commands');
+        $telegramHostNotificationCommand = $commandsTable->getCommandByName('host-notify-by-telegram', false, false);
+        $telegramServiceNotificationCommand = $commandsTable->getCommandByName(
+            'service-notify-by-telegram',
+            false,
+            false
+        );
 
         foreach ($allContacts as $contact) {
             if (in_array($telegramHostNotificationCommand[0]['id'], Hash::extract($contact, 'host_commands.{n}.id')) ||
-                in_array($telegramServiceNotificationCommand[0]['id'], Hash::extract($contact, 'service_commands.{n}.id'))) {
+                in_array(
+                    $telegramServiceNotificationCommand[0]['id'],
+                    Hash::extract($contact, 'service_commands.{n}.id')
+                )) {
                 $contacts[] = $contact;
             }
         }
 
         if ($telegramSettings->get('external_webhook_domain') == "") {
-            /** @var SystemsettingsTable $SystemsettingsTable */
-            $SystemsettingsTable = TableRegistry::getTableLocator()->get('Systemsettings');
-            $result = $SystemsettingsTable->getSystemsettingByKey('SYSTEM.ADDRESS');
-            $telegramSettings->set('external_webhook_domain', sprintf('https://%s', $result->get('value')));
+            /** @var SystemsettingsTable $systemsettingsTable */
+            $systemsettingsTable = TableRegistry::getTableLocator()->get('Systemsettings');
+            $addressSystemSetting = $systemsettingsTable->getSystemsettingByKey('SYSTEM.ADDRESS');
+            $telegramSettings->set(
+                'external_webhook_domain',
+                sprintf('https://%s', $addressSystemSetting->get('value'))
+            );
         }
 
         if ($this->request->is('get')) {
@@ -90,32 +112,48 @@ class TelegramSettingsController extends AppController {
             $this->set('contactsAccessKeys', $contactsAccessKeys);
             $this->set('chats', $chats);
             $this->viewBuilder()->setOption('serialize', [
-                'telegramSettings', 'contacts', 'contactsAccessKeys', 'chats'
+                'telegramSettings',
+                'contacts',
+                'contactsAccessKeys',
+                'chats'
             ]);
             return;
         }
 
         if ($this->request->is('post')) {
-            $entity = $TelegramSettingsTable->getTelegramSettingsEntity();
+            $entity = $telegramSettingsTable->getTelegramSettingsEntity();
             $originalTwoWaySetting = $entity->get('two_way');
-            $entity = $TelegramSettingsTable->patchEntity($entity, $this->request->getData(null, []));
+            $entity = $telegramSettingsTable->patchEntity($entity, $this->request->getData(null, []));
 
-            if (($originalTwoWaySetting || $originalTwoWaySetting == 1) && (!$entity->get('two_way') || $entity->get('two_way') == 0) && $entity->get('token') != "") {
+            if (
+                ($originalTwoWaySetting || $originalTwoWaySetting == 1) &&
+                (!$entity->get('two_way') || $entity->get('two_way') == 0) &&
+                $entity->get('token') != ""
+            ) {
                 //disable Telegram bot webhook
-                $TelegramActions = new TelegramActions($entity->get('token'));
-                $TelegramActions->disableWebhook();
-            } else if (($entity->get('two_way') || $entity->get('two_way') == 1) && $entity->get('token') != "" && $entity->get('external_webhook_domain') != "" && $entity->get('webhook_api_key') != "") {
+                $telegramActions = new TelegramActions($entity->get('token'));
+                $telegramActions->disableWebhook();
+            } elseif (
+                ($entity->get('two_way') || $entity->get('two_way') == 1) &&
+                $entity->get('token') != "" &&
+                $entity->get('external_webhook_domain') != "" &&
+                $entity->get('webhook_api_key') != ""
+            ) {
                 //enable/update Telegram bot webhook
-                $TelegramActions = new TelegramActions($entity->get('token'));
-                $webhookUrl = sprintf('%s/telegram_module/telegram_webhook/notify.json?apikey=%s', $entity->get('external_webhook_domain'), $entity->get('webhook_api_key'));
-                $result = $TelegramActions->enableWebhook($webhookUrl);
+                $telegramActions = new TelegramActions($entity->get('token'));
+                $webhookUrl = sprintf(
+                    '%s/telegram_module/telegram_webhook/notify.json?apikey=%s',
+                    $entity->get('external_webhook_domain'),
+                    $entity->get('webhook_api_key')
+                );
+                $addressSystemSetting = $telegramActions->enableWebhook($webhookUrl);
 
-                if (!$result || $result === "") {
+                if (!$addressSystemSetting || trim($addressSystemSetting) === '') {
                     $entity->set('two_way', false);
                 }
             }
 
-            $TelegramSettingsTable->save($entity);
+            $telegramSettingsTable->save($entity);
             if ($entity->hasErrors()) {
                 $this->response = $this->response->withStatus(400);
                 $this->set('error', $entity->getErrors());
@@ -130,95 +168,115 @@ class TelegramSettingsController extends AppController {
         }
     }
 
-    public function genKey() {
-        if ($this->isAngularJsRequest()) {
-            if ($this->request->is('post')) {
-                $contact_uuid = $this->request->getData('contact_uuid');
-                if ($contact_uuid !== null) {
-                    /** @var ContactsTable $ContactsTable */
-                    $ContactsTable = TableRegistry::getTableLocator()->get('Contacts');
+    /**
+     * Generates an access key for the given contact.
+     * @return void
+     */
+    public function genKey()
+    {
+        if ($this->isAngularJsRequest() && $this->request->is('post')) {
+            $contact_uuid = $this->request->getData('contact_uuid');
+            if ($contact_uuid !== null) {
+                /** @var ContactsTable $contactsTable */
+                $contactsTable = TableRegistry::getTableLocator()->get('Contacts');
 
-                    $query = $ContactsTable->find()
-                        ->where([
-                            'Contacts.uuid' => $contact_uuid
-                        ])
-                        ->disableHydration()
-                        ->first();
+                $query = $contactsTable->find()
+                    ->where([
+                        'Contacts.uuid' => $contact_uuid
+                    ])
+                    ->disableHydration()
+                    ->first();
 
-                    if ($query !== null) {
-                        /** @var TelegramContactsAccessKeysTable $TelegramContactsAccessKeysTable */
-                        $TelegramContactsAccessKeysTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramContactsAccessKeys');
-                        $contactsAccessKey = $TelegramContactsAccessKeysTable->getNewOrExistingAccessKeyByContactUuid($contact_uuid);
-                        $TelegramContactsAccessKeysTable->saveOrFail($contactsAccessKey);
+                if ($query !== null) {
+                    /** @var TelegramContactsAccessKeysTable $telegramContactsAccessKeysTable */
+                    $telegramContactsAccessKeysTable = TableRegistry::getTableLocator()->get(
+                        'TelegramModule.TelegramContactsAccessKeys'
+                    );
+                    $contactsAccessKey = $telegramContactsAccessKeysTable->getNewOrExistingAccessKeyByContactUuid(
+                        $contact_uuid
+                    );
+                    $telegramContactsAccessKeysTable->saveOrFail($contactsAccessKey);
 
-                        $contactsAccessKeys = $TelegramContactsAccessKeysTable->getAllAsArray();
-                        $this->set('contactsAccessKeys', $contactsAccessKeys);
-                        $this->viewBuilder()->setOption('serialize', [
-                            'contactsAccessKeys'
-                        ]);
-                    }
+                    $contactsAccessKeys = $telegramContactsAccessKeysTable->getAllAsArray();
+                    $this->set('contactsAccessKeys', $contactsAccessKeys);
+                    $this->viewBuilder()->setOption('serialize', [
+                        'contactsAccessKeys'
+                    ]);
                 }
             }
         }
     }
 
-    public function rmKey() {
-        if ($this->isAngularJsRequest()) {
-            if ($this->request->is('post')) {
-                $contact_uuid = $this->request->getData('contact_uuid');
-                if ($contact_uuid !== null) {
-                    /** @var ContactsTable $ContactsTable */
-                    $ContactsTable = TableRegistry::getTableLocator()->get('Contacts');
+    /**
+     * Removes the access key for the given contact.
+     * @return void
+     */
+    public function rmKey()
+    {
+        if ($this->isAngularJsRequest() && $this->request->is('post')) {
+            $contact_uuid = $this->request->getData('contact_uuid');
+            if ($contact_uuid !== null) {
+                /** @var ContactsTable $contactsTable */
+                $contactsTable = TableRegistry::getTableLocator()->get('Contacts');
 
-                    $query = $ContactsTable->find()
-                        ->where([
-                            'Contacts.uuid' => $contact_uuid
-                        ])
-                        ->disableHydration()
-                        ->first();
+                $query = $contactsTable->find()
+                    ->where([
+                        'Contacts.uuid' => $contact_uuid
+                    ])
+                    ->disableHydration()
+                    ->first();
 
-                    if ($query !== null) {
-                        /** @var TelegramContactsAccessKeysTable $TelegramContactsAccessKeysTable */
-                        $TelegramContactsAccessKeysTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramContactsAccessKeys');
-                        $contactsAccessKey = $TelegramContactsAccessKeysTable->getNewOrExistingAccessKeyByContactUuid($contact_uuid);
-                        $TelegramContactsAccessKeysTable->deleteOrFail($contactsAccessKey);
+                if ($query !== null) {
+                    /** @var TelegramContactsAccessKeysTable $telegramContactsAccessKeysTable */
+                    $telegramContactsAccessKeysTable = TableRegistry::getTableLocator()->get(
+                        'TelegramModule.TelegramContactsAccessKeys'
+                    );
+                    $contactsAccessKey = $telegramContactsAccessKeysTable->getNewOrExistingAccessKeyByContactUuid(
+                        $contact_uuid
+                    );
+                    $telegramContactsAccessKeysTable->deleteOrFail($contactsAccessKey);
 
-                        $contactsAccessKeys = $TelegramContactsAccessKeysTable->getAllAsArray();
-                        $this->set('contactsAccessKeys', $contactsAccessKeys);
-                        $this->viewBuilder()->setOption('serialize', [
-                            'contactsAccessKeys'
-                        ]);
-                    }
+                    $contactsAccessKeys = $telegramContactsAccessKeysTable->getAllAsArray();
+                    $this->set('contactsAccessKeys', $contactsAccessKeys);
+                    $this->viewBuilder()->setOption('serialize', [
+                        'contactsAccessKeys'
+                    ]);
                 }
             }
         }
     }
 
-    public function rmChat() {
-        if ($this->isAngularJsRequest()) {
-            if ($this->request->is('post')) {
-                $id = $this->request->getData('id');
-                if ($id !== null) {
-                    /** @var TelegramChatsTable $TelegramChatsTable */
-                    $TelegramChatsTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramChats');
-                    $chat = $TelegramChatsTable->get($id);
+    /**
+     * Delete / revoke authorization for an already connected Telegram chat.
+     * @return void
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws \Exception
+     */
+    public function rmChat()
+    {
+        if ($this->isAngularJsRequest() && $this->request->is('post')) {
+            $id = $this->request->getData('id');
+            if ($id !== null) {
+                /** @var TelegramChatsTable $telegramChatsTable */
+                $telegramChatsTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramChats');
+                $chat = $telegramChatsTable->get($id);
 
-                    /** @var TelegramSettingsTable $TelegramSettingsTable */
-                    $TelegramSettingsTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramSettings');
+                /** @var TelegramSettingsTable $telegramSettingsTable */
+                $telegramSettingsTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramSettings');
 
-                    if ($chat !== null) {
-                        $telegramSettingsEntity = $TelegramSettingsTable->getTelegramSettingsEntity();
-                        $TelegramActions = new TelegramActions($telegramSettingsEntity->get('token'));
-                        $TelegramActions->notifyChatAboutDeauthorization($chat->chat_id);
+                if ($chat !== null) {
+                    $telegramSettingsEntity = $telegramSettingsTable->getTelegramSettingsEntity();
+                    $telegramActions = new TelegramActions($telegramSettingsEntity->get('token'));
+                    $telegramActions->notifyChatAboutDeauthorization($chat->chat_id);
 
-                        $TelegramChatsTable->deleteOrFail($chat);
+                    $telegramChatsTable->deleteOrFail($chat);
 
-                        $chats = $TelegramChatsTable->getTelegramChats();
-                        $this->set('chats', $chats);
-                        $this->viewBuilder()->setOption('serialize', [
-                            'chats'
-                        ]);
-                    }
+                    $chats = $telegramChatsTable->getTelegramChats();
+                    $this->set('chats', $chats);
+                    $this->viewBuilder()->setOption('serialize', [
+                        'chats'
+                    ]);
                 }
             }
         }
