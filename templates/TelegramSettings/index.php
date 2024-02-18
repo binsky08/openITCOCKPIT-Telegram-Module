@@ -350,6 +350,21 @@
                                 </li>
                             </ul>
                         </div>
+
+                        <div class="col-12">
+                            <h4>
+                                <?= __('Troubleshooting') ?>
+                            </h4>
+                            <ul>
+                                <li>
+                                    <?= __('If you aren\'t using the two-way integration or switching from two-way to one-way, it could happen that the cronjob is not going to be executed by openITCOCKPIT.') ?>
+                                    <ul>
+                                        <li><?= sprintf(__('That problem should be solved after running it once manually: %s'), '<code>oitc cronjobs -f -t TelegramProcessUpdates</code>') ?></li>
+                                        <li><?= __('Note that the cron job is not needed if you use a two-way setup of this plugin') ?></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
