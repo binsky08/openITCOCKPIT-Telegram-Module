@@ -6,9 +6,6 @@
     "require": {
         "telegram-bot/api": "^2.3"
     },
-    "require-dev": {
-        "phpunit/phpunit": "^8.0"
-    },
     "autoload": {
         "psr-4": {
             "TelegramModule\\": "src/",
