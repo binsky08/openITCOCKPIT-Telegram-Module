@@ -230,6 +230,9 @@
                                     &nbsp;| Telegram user: {{chat.started_from_username}}
                                 </span>
                                 <span>
+                                    <button class="btn btn-xs btn-success mr-1 shadow-0" ng-click="sendTestChatMessage(chat.id)">
+                                        <i class="fas fa-message"></i> <?php echo __('Send test chat message'); ?>
+                                    </button>
                                     <a class="btn btn-xs btn-danger mr-1 shadow-0"
                                        ng-click="deleteChat(chat.id)"
                                        href="javascript:void(0);">

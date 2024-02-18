@@ -12,7 +12,9 @@ use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use TelegramBot\Api\Exception;
 use TelegramBot\Api\InvalidArgumentException;
+use TelegramModule\Command\TelegramNotificationCommand;
 use TelegramModule\Lib\TelegramActions;
+use TelegramModule\Model\Entity\TelegramChats;
 use TelegramModule\Model\Entity\TelegramSetting;
 use TelegramModule\Model\Table\TelegramChatsTable;
 use TelegramModule\Model\Table\TelegramContactsAccessKeysTable;
@@ -279,6 +281,59 @@ class TelegramSettingsController extends AppController
                     ]);
                 }
             }
+        }
+    }
+
+    /**
+     * @return void
+     */
+    public function sendTestChatMessage()
+    {
+        if ($this->isAngularJsRequest() && $this->request->is('post')) {
+            $success = false;
+            $responseMessage = __d(
+                'oitc_console',
+                'Chat id required'
+            );
+
+            $id = $this->request->getData('id');
+            if ($id !== null) {
+                /** @var TelegramChatsTable $telegramChatsTable */
+                $telegramChatsTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramChats');
+                $chat = $telegramChatsTable->get($id);
+
+                if ($chat !== null) {
+                    if ($chat->enabled) {
+                        try {
+                            TelegramNotificationCommand::sendTestChatMessage($chat->chat_id);
+                            $responseMessage = __d(
+                                'oitc_console',
+                                'Test message successfully sent.'
+                            );
+                            $success = true;
+                        } catch (\Exception $e) {
+                            $responseMessage = $e->getMessage();
+                        }
+                    } else {
+                        $responseMessage = __d(
+                            'oitc_console',
+                            'Notifications are not enabled for this chat. Enter /start to enable.'
+                        );
+                    }
+                } else {
+                    $responseMessage = __d(
+                        'oitc_console',
+                        'Chat could not be found'
+                    );
+                }
+            }
+
+            $this->set('responseMessage', $responseMessage);
+            $this->set('success', $success);
+            $this->viewBuilder()->setOption('serialize', [
+                'responseMessage',
+                'success'
+            ]);
         }
     }
 }

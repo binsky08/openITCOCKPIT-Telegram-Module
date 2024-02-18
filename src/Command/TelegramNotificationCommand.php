@@ -11,8 +11,8 @@ use App\Model\Table\HostsTable;
 use App\Model\Table\ProxiesTable;
 use App\Model\Table\ServicesTable;
 use App\Model\Table\SystemsettingsTable;
+use Cake\Command\Command;
 use Cake\Console\Arguments;
-use Cake\Console\Command;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use Cake\Datasource\Exception\RecordNotFoundException;
@@ -27,7 +27,11 @@ use itnovum\openITCOCKPIT\Exceptions\HostNotFoundException;
 use itnovum\openITCOCKPIT\Exceptions\ServiceNotFoundException;
 use Spatie\Emoji\Emoji;
 use TelegramBot\Api\BotApi;
+use TelegramBot\Api\Exception;
+use TelegramBot\Api\InvalidArgumentException;
 use TelegramBot\Api\Types\Inline\InlineKeyboardMarkup;
+use TelegramBot\Api\Types\Message;
+use TelegramModule\Lib\TelegramInfoMessages;
 use TelegramModule\Model\Table\TelegramChatsTable;
 use TelegramModule\Model\Table\TelegramSettingsTable;
 
@@ -226,6 +230,34 @@ class TelegramNotificationCommand extends Command
 
         $this->sendHostNotification($hostView);
         exit(0);
+    }
+
+    /**
+     * @param int $chat_id
+     * @return Message
+     * @throws Exception
+     * @throws InvalidArgumentException
+     */
+    public static function sendTestChatMessage(int $chat_id): Message
+    {
+        /** @var TelegramSettingsTable $telegramSettingsTable */
+        $telegramSettingsTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramSettings');
+        $telegramSettings = $telegramSettingsTable->getTelegramSettings();
+
+        /** @var ProxiesTable $proxiesTable */
+        $proxiesTable = TableRegistry::getTableLocator()->get('Proxies');
+        $proxySettings = $proxiesTable->getSettings();
+
+        $bot = new BotApi($telegramSettings->get('token'));
+        if ($telegramSettings->get('use_proxy') && $proxySettings['enabled'] == 1) {
+            $bot->setProxy(sprintf('%s:%s', $proxySettings['ipaddress'], $proxySettings['port']));
+        }
+
+        return $bot->sendMessage(
+            $chat_id,
+            TelegramInfoMessages::getText(TelegramInfoMessages::MESSAGE_TEST),
+            "Markdown"
+        );
     }
 
     private function sendHostNotification(Host $hostView)

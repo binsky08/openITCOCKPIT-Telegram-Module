@@ -14,6 +14,7 @@ class TelegramInfoMessages
     const MESSAGE_DELETE_SUCCESSFUL = 6;
     const MESSAGE_DELAY = 7;
     const MESSAGE_HELP = 8;
+    const MESSAGE_TEST = 9;
 
     /**
      * @param int $messageType use TelegramInfoMessages constants as message types
@@ -61,6 +62,8 @@ Use `/auth xxx` to authorize yourself. Replace xxx with the right API access key
 `/help` shows this help text again
 `/delete` deletes this bot connection in openITCOCKPIT"
                 );
+            case self::MESSAGE_TEST:
+                return __d('oitc_console', "Test message from Telegram Module configuration.");
             default:
                 return '';
         }
