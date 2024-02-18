@@ -26,6 +26,9 @@
                     <span class="fw-300"><i><?php echo __('Configuration'); ?></i></span>
                 </h2>
                 <div class="panel-toolbar">
+                    <button class="btn btn-xs btn-default mr-1 shadow-0" ng-click="load()">
+                        <i class="fas fa-sync"></i> <?php echo __('Refresh'); ?>
+                    </button>
                     <button class="btn btn-xs btn-default mr-1 shadow-0" data-toggle="modal" data-target="#howtoModal">
                         <i class="fas fa-question-circle"></i> <?php echo __('HowTo'); ?>
                     </button>
@@ -230,7 +233,7 @@
                                     <a class="btn btn-xs btn-danger mr-1 shadow-0"
                                        ng-click="deleteChat(chat.id)"
                                        href="javascript:void(0);">
-                                        <?= __('Delete chat / Revoke authorization') ?>
+                                        <?= __('Delete chat connection / Revoke authorization') ?>
                                     </a>
                                 </span>
                             </div>
