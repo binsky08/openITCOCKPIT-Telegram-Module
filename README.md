@@ -11,6 +11,7 @@
 Read [Usage](#usage) for more information
 
 ## Installation
+Proceed with this installation tutorial if you have a "default" (non-docker) openITCOCKPIT installation.
 
 ### Latest version from GitHub
 - Clone the module contents into /opt/openitc/frontend/plugins/TelegramModule
@@ -28,6 +29,21 @@ openitcockpit-update --cc
 ```
 
 Note for existing installations: the customization of `/opt/openitc/frontend/src/Lib/PluginManager.php` is no longer needed!
+
+## Installation for openitcockpit-ce Docker setup
+Proceed with this installation tutorial if you have an [openitcockpit-ce Docker setup](https://docs.openitcockpit.io/en/installation/docker/).
+
+- Clone the module contents into a custom host directory like /opt/TelegramModule
+  - `git clone https://github.com/binsky08/openITCOCKPIT-Telegram-Module /opt/TelegramModule`
+- If you have an already existing setup, run `docker compose down` to stop it.
+- Edit your `compose.yml` and add these two lines to the volume mounts of the service `openitcockpit`
+  ```
+  - /opt/TelegramModule/:/opt/openitc/frontend/plugins/TelegramModule
+  - /opt/TelegramModule/:/opt/openitc/src/frontend/plugins/TelegramModule:ro
+  ```
+- Run `docker run --rm -it -v /opt/TelegramModule:/app composer install --ignore-platform-reqs --no-scripts` to install the module dependencies using a temporary composer docker container
+  - or just run `composer install` in /opt/TelegramModule if you have composer installed at your host system
+- Start the openITCOCKPIT docker setup with `docker compose up -d`
 
 ## Configuration
 
@@ -94,12 +110,19 @@ Run `/help` in bot chat to get more information about how to control the bot.
 
 ![grafik](https://user-images.githubusercontent.com/30630233/147828242-40f4b3a1-4404-4169-9b8c-c57017eb08fe.png)
 
-
 ### Commands
 ```
 git -C /opt/openitc/frontend/plugins/TelegramModule pull
 composer -d /opt/openitc/frontend/plugins/TelegramModule install
 openitcockpit-update --cc
+```
+
+### Commands for openitcockpit-ce Docker setup
+Run these commands on the Docker host system of your openitcockpit-ce setup.
+```
+git -C /opt/TelegramModule pull
+docker run --rm -it -v /opt/TelegramModule:/app composer install --ignore-platform-reqs --no-scripts
+docker compose exec openitcockpit openitcockpit-update --cc
 ```
 
 ## Troubleshooting
