@@ -39,25 +39,24 @@ class TelegramProcessUpdatesCommand extends Command
      * @param Arguments $args
      * @param ConsoleIo $io
      * @return void
-     * @throws Exception
-     * @throws HostNotFoundException
-     * @throws InvalidArgumentException
-     * @throws ServiceNotFoundException
-     * @throws \Exception
      */
-    public function execute(Arguments $args, ConsoleIo $io)
+    public function execute(Arguments $args, ConsoleIo $io): void
     {
-        echo '-------------------------------------------------------------------------------' . PHP_EOL;
+        $io->out('-------------------------------------------------------------------------------');
 
         if ($args->hasOption('api-token') && $args->getOption('api-token') != '') {
             $token = $args->getOption('api-token');
         }
 
-        $telegramActions = new TelegramActions(isset($token) && $token !== "" ? $token : null);
-        if ($telegramActions->isTwoWayWebhookEnabled()) {
-            echo 'Telegram api requests are disabled (and not needed) because webhooks are configured!' . PHP_EOL;
-        } else {
-            $this->processOneWayUpdates($telegramActions);
+        try {
+            $telegramActions = new TelegramActions(!empty($token) ? $token : null);
+            if ($telegramActions->isTwoWayWebhookEnabled()) {
+                $io->out('Telegram api requests are disabled (and not needed) because webhooks are configured!');
+            } else {
+                $this->processOneWayUpdates($telegramActions, $io);
+            }
+        } catch (\Exception $exception) {
+            $io->err($exception->getMessage());
         }
     }
 
@@ -67,7 +66,7 @@ class TelegramProcessUpdatesCommand extends Command
      * @throws Exception
      * @throws HostNotFoundException
      */
-    private function processOneWayUpdates(TelegramActions $telegramActions)
+    private function processOneWayUpdates(TelegramActions $telegramActions, ConsoleIo $io): void
     {
         $updates = $telegramActions->getUpdates();
         if ($updates instanceof \Exception) {
@@ -75,21 +74,20 @@ class TelegramProcessUpdatesCommand extends Command
                 // Conflict: can't use getUpdates method while webhook is active;
                 // use bot->deleteWebhook() within $telegramActions->disableWebhook() to delete the webhook first
                 $telegramActions->disableWebhook();
-                echo 'Disable maybe misconfigured Telegram api webhook.' . PHP_EOL;
+                $io->out('Disable possibly misconfigured Telegram api webhook.');
 
                 // fetch updates again after disabling the webhook
                 $updates = $telegramActions->getUpdates();
             } else {
-                echo $updates->getMessage() . PHP_EOL;
-                exit($updates->getCode());
+                $io->err(sprintf('BotApi error: %d, %s', $updates->getCode(), $updates->getMessage()));
             }
         }
 
         if (!($updates instanceof \Exception) && sizeof($updates) > 0) {
             $telegramActions->processUpdates($updates);
-            echo sizeof($updates) . ' Telegram updates processed.' . PHP_EOL;
+            $io->out(sizeof($updates) . ' Telegram updates processed.');
         } else {
-            echo 'No Telegram updates processed.' . PHP_EOL;
+            $io->out('No Telegram updates processed.');
         }
     }
 }

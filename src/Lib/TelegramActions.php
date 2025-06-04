@@ -44,7 +44,7 @@ class TelegramActions
     private $bot;
 
     /**
-     * @throws \Exception
+     * @throws \Exception | BotTokenMissingException
      */
     public function __construct(string $tokenOverwrite = null)
     {
@@ -72,11 +72,10 @@ class TelegramActions
                 $this->updateOffset = $this->telegramSettings->get('last_update_id');
             }
         } else {
-            echo __d('oitc_console', 'No telegram bot token configured!') . PHP_EOL;
-            return null;
+            $message = 'No telegram bot token configured!';
+            echo __d('oitc_console', $message) . PHP_EOL;
+            throw new BotTokenMissingException($message);
         }
-
-        return $this;
     }
 
     /**

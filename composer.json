@@ -4,6 +4,7 @@
     "type": "cakephp-plugin",
     "license": "MIT",
     "require": {
+        "php": ">=8.1",
         "telegram-bot/api": "^2.3"
     },
     "autoload": {
