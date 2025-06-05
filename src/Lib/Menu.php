@@ -23,19 +23,43 @@ class Menu implements MenuInterface
                     __('APIs')
                 ))
                     ->addLink(
-                        new MenuLink(
-                            __('Telegram'),
-                            'TelegramSettingsIndex',
-                            'TelegramSettings',
-                            'index',
-                            'TelegramModule',
-                            'fab fa-telegram',
-                            [],
-                            1
-                        )
+                        match (OPENITCOCKPIT_VERSION[0]) {
+                            '4' => $this->v4MenuLink(),
+                            default => $this->v5MenuLink()
+                        }
                     )
             );
 
         return [$menuHeadline];
+    }
+
+    protected function v4MenuLink(): MenuLink
+    {
+        return new MenuLink(
+            __('Telegram'),
+            'TelegramSettingsIndex',
+            'TelegramSettings',
+            'index',
+            'TelegramModule',
+            'fab fa-telegram',
+            [],
+            1
+        );
+    }
+
+    protected function v5MenuLink(): MenuLink
+    {
+        return new MenuLink(
+            __('Telegram'),
+            'TelegramSettingsIndex',
+            'TelegramSettings',
+            'index',
+            'TelegramModule',
+            ['fab', 'telegram'],
+            [],
+            1,
+            true,
+            '/telegram_module/TelegramSettings/index'
+        );
     }
 }
