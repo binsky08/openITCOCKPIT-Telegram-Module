@@ -11,8 +11,8 @@ use App\Model\Table\HostsTable;
 use App\Model\Table\ProxiesTable;
 use App\Model\Table\ServicesTable;
 use App\Model\Table\SystemsettingsTable;
-use Cake\Command\Command;
 use Cake\Console\Arguments;
+use Cake\Console\BaseCommand;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use Cake\Datasource\Exception\RecordNotFoundException;
@@ -38,7 +38,7 @@ use TelegramModule\Model\Table\TelegramSettingsTable;
 /**
  * TelegramModule command.
  */
-class TelegramNotificationCommand extends Command {
+class TelegramNotificationCommand extends BaseCommand {
 
     private $type = 'host';
 

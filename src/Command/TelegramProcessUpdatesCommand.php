@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace TelegramModule\Command;
 
 use Cake\Console\Arguments;
-use Cake\Console\Command;
+use Cake\Console\BaseCommand;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use itnovum\openITCOCKPIT\Exceptions\HostNotFoundException;
@@ -18,7 +18,7 @@ use TelegramModule\Lib\TelegramActions;
  * TelegramModule command, used as cronjob for one-way update processing.
  * Trigger it manually by running: oitc cronjobs -f -t TelegramProcessUpdates
  */
-class TelegramProcessUpdatesCommand extends Command {
+class TelegramProcessUpdatesCommand extends BaseCommand {
     /**
      * @param ConsoleOptionParser $parser
      * @return ConsoleOptionParser

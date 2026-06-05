@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-use Migrations\AbstractMigration;
+use Migrations\BaseMigration;
 
 /**
  * Class Initial
@@ -9,9 +9,9 @@ use Migrations\AbstractMigration;
  * Created via:
  * oitc migrations create -p TelegramModule Initial
  */
-class Initial extends AbstractMigration {
+class Initial extends BaseMigration {
 
-    public function up() {
+    public function up(): void {
         if (!$this->hasTable('telegram_settings')) {
             $this->table('telegram_settings')
                 ->addColumn('token', 'string', [
@@ -79,7 +79,7 @@ class Initial extends AbstractMigration {
         }
     }
 
-    public function down() {
+    public function down(): void {
         if ($this->hasTable('telegram_settings')) {
             $this->table('telegram_settings')->drop()->save();
         }

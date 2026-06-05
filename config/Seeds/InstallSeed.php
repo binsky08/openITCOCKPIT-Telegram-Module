@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use Cake\Database\Connection;
 use Cake\Datasource\ConnectionManager;
-use Migrations\AbstractSeed;
+use itnovum\openITCOCKPIT\Core\UUID;
+use Migrations\BaseSeed;
 
 /**
  * Class InstallSeed
@@ -14,7 +16,7 @@ use Migrations\AbstractSeed;
  * Apply:
  * oitc migrations seed -p TelegramModule
  */
-class InstallSeed extends AbstractSeed {
+class InstallSeed extends BaseSeed {
     private const COMMANDS_TABLE_NAME = 'commands';
     private const CRONJOBS_TABLE_NAME = 'cronjobs';
 
@@ -29,7 +31,7 @@ class InstallSeed extends AbstractSeed {
      * @return void
      */
     public function run(): void {
-        /** @var \Cake\Database\Connection $connection */
+        /** @var Connection $connection */
         $connection = ConnectionManager::get('default');
 
         //Migrate wrong typed host notification command from host-notifiy-by-telegram to host-notify-by-telegram
@@ -47,7 +49,7 @@ class InstallSeed extends AbstractSeed {
                 'command_line' => '/opt/openitc/frontend/bin/cake TelegramModule.TelegramNotification --type Host --notificationtype $NOTIFICATIONTYPE$ --hostuuid "$HOSTNAME$" --state "$HOSTSTATEID$" --output "$HOSTOUTPUT$" --ackauthor "$NOTIFICATIONAUTHOR$" --ackcomment "$NOTIFICATIONCOMMENT$" --contactuuid "$CONTACTNAME$"',
                 'command_type' => NOTIFICATION_COMMAND,
                 'human_args'   => null,
-                'uuid'         => \itnovum\openITCOCKPIT\Core\UUID::v4(),
+                'uuid'         => UUID::v4(),
                 'description'  => 'Send host notifications to Telegram',
             ],
             [
@@ -55,7 +57,7 @@ class InstallSeed extends AbstractSeed {
                 'command_line' => '/opt/openitc/frontend/bin/cake TelegramModule.TelegramNotification --type Service --notificationtype $NOTIFICATIONTYPE$ --hostuuid "$HOSTNAME$" --serviceuuid "$SERVICEDESC$" --state "$SERVICESTATEID$" --output "$SERVICEOUTPUT$" --ackauthor "$NOTIFICATIONAUTHOR$" --ackcomment "$NOTIFICATIONCOMMENT$" --contactuuid "$CONTACTNAME$"',
                 'command_type' => NOTIFICATION_COMMAND,
                 'human_args'   => null,
-                'uuid'         => \itnovum\openITCOCKPIT\Core\UUID::v4(),
+                'uuid'         => UUID::v4(),
                 'description'  => 'Send service notifications to Telegram',
             ]
         ];

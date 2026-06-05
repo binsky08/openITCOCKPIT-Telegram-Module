@@ -3,17 +3,17 @@ declare(strict_types=1);
 
 use App\Model\Table\ContactsTable;
 use Cake\ORM\TableRegistry;
-use Migrations\AbstractMigration;
+use Migrations\BaseMigration;
 use TelegramModule\Model\Table\TelegramChatsTable;
 
 /**
  * Class MultiContactsSupport
  */
-class MultiContactsSupport extends AbstractMigration {
+class MultiContactsSupport extends BaseMigration {
 
-    public $autoId = false;
+    public bool $autoId = false;
 
-    public function up() {
+    public function up(): void {
         if (!$this->hasTable('telegram_contacts_access_keys')) {
             $this->table('telegram_contacts_access_keys')
                 ->addColumn('contact_uuid', 'string', [
@@ -70,7 +70,7 @@ class MultiContactsSupport extends AbstractMigration {
         }
     }
 
-    public function down() {
+    public function down(): void {
         if ($this->hasTable('telegram_contacts_access_keys')) {
             $this->table('telegram_contacts_access_keys')->drop()->save();
         }
