@@ -8,13 +8,11 @@ use itnovum\openITCOCKPIT\Core\Menu\MenuHeadline;
 use itnovum\openITCOCKPIT\Core\Menu\MenuInterface;
 use itnovum\openITCOCKPIT\Core\Menu\MenuLink;
 
-class Menu implements MenuInterface
-{
+class Menu implements MenuInterface {
     /**
      * @return array
      */
-    public function getHeadlines(): array
-    {
+    public function getHeadlines(): array {
         $menuHeadline = new MenuHeadline(\itnovum\openITCOCKPIT\Core\Menu\Menu::MENU_CONFIGURATION);
         $menuHeadline
             ->addCategory(
@@ -33,8 +31,7 @@ class Menu implements MenuInterface
         return [$menuHeadline];
     }
 
-    protected function v4MenuLink(): MenuLink
-    {
+    protected function v4MenuLink(): MenuLink {
         return new MenuLink(
             __('Telegram'),
             'TelegramSettingsIndex',
@@ -47,8 +44,7 @@ class Menu implements MenuInterface
         );
     }
 
-    protected function v5MenuLink(): MenuLink
-    {
+    protected function v5MenuLink(): MenuLink {
         return new MenuLink(
             __('Telegram'),
             'TelegramSettingsIndex',

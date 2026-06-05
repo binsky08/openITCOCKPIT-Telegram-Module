@@ -14,16 +14,14 @@ use TelegramModule\Lib\TelegramActions;
  * Class TelegramWebhookController
  * @package TelegramModule\Controller
  */
-class TelegramWebhookController extends AppController
-{
+class TelegramWebhookController extends AppController {
     /**
      * @throws ServiceNotFoundException
      * @throws InvalidArgumentException
      * @throws Exception
      * @throws HostNotFoundException
      */
-    public function notify()
-    {
+    public function notify() {
         $this->set('successful', false);
         $telegramActions = new TelegramActions();
 

@@ -38,8 +38,7 @@ use TelegramModule\Model\Table\TelegramSettingsTable;
 /**
  * TelegramModule command.
  */
-class TelegramNotificationCommand extends Command
-{
+class TelegramNotificationCommand extends Command {
 
     private $type = 'host';
 
@@ -99,8 +98,7 @@ class TelegramNotificationCommand extends Command
      * @param ConsoleOptionParser $parser The parser to be defined
      * @return ConsoleOptionParser The built parser.
      */
-    public function buildOptionParser(ConsoleOptionParser $parser): ConsoleOptionParser
-    {
+    public function buildOptionParser(ConsoleOptionParser $parser): ConsoleOptionParser {
         $parser = parent::buildOptionParser($parser);
 
         $parser->addOptions([
@@ -172,8 +170,7 @@ class TelegramNotificationCommand extends Command
      * @throws ServiceNotFoundException
      * @throws \Exception
      */
-    public function execute(Arguments $args, ConsoleIo $io)
-    {
+    public function execute(Arguments $args, ConsoleIo $io) {
         $this->validateOptions($args);
 
 
@@ -238,8 +235,7 @@ class TelegramNotificationCommand extends Command
      * @throws Exception
      * @throws InvalidArgumentException
      */
-    public static function sendTestChatMessage(int $chat_id): Message
-    {
+    public static function sendTestChatMessage(int $chat_id): Message {
         /** @var TelegramSettingsTable $telegramSettingsTable */
         $telegramSettingsTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramSettings');
         $telegramSettings = $telegramSettingsTable->getTelegramSettings();
@@ -260,8 +256,7 @@ class TelegramNotificationCommand extends Command
         );
     }
 
-    private function sendHostNotification(Host $hostView)
-    {
+    private function sendHostNotification(Host $hostView) {
         $hostStatusIcon = new HoststatusIcon($this->state);
 
         if ($this->isAcknowledgement()) {
@@ -280,7 +275,7 @@ class TelegramNotificationCommand extends Command
             }
 
             $this->sendMessage($title);
-        } elseif ($this->isDowntimeStart()) {
+        } else if ($this->isDowntimeStart()) {
             $title = sprintf(
                 'Downtime started for [%s](%s/#!/hosts/browser/%s)',
                 $hostView->getHostname(),
@@ -292,7 +287,7 @@ class TelegramNotificationCommand extends Command
                 $title = Emoji::zzz() . ' ' . $title;
             }
             $this->sendMessage($title);
-        } elseif ($this->isDowntimeEnd()) {
+        } else if ($this->isDowntimeEnd()) {
             $title = sprintf(
                 'Downtime end for [%s](%s/#!/hosts/browser/%s)',
                 $hostView->getHostname(),
@@ -305,7 +300,7 @@ class TelegramNotificationCommand extends Command
             }
 
             $this->sendMessage($title);
-        } elseif ($this->isDowntimeCancelled()) {
+        } else if ($this->isDowntimeCancelled()) {
             $title = sprintf(
                 'Downtime cancelled for [%s](%s/#!/hosts/browser/%s)',
                 $hostView->getHostname(),
@@ -317,7 +312,7 @@ class TelegramNotificationCommand extends Command
                 $title = Emoji::wastebasket() . ' ' . $title;
             }
             $this->sendMessage($title);
-        } elseif ($this->isFlappingStart()) {
+        } else if ($this->isFlappingStart()) {
             $title = sprintf(
                 'Flapping started on [%s](%s/#!/hosts/browser/%s)',
                 $hostView->getHostname(),
@@ -326,7 +321,7 @@ class TelegramNotificationCommand extends Command
             );
 
             $this->sendMessage($title);
-        } elseif ($this->isFlappingStop()) {
+        } else if ($this->isFlappingStop()) {
             $title = sprintf(
                 'Flapping stopped on [%s](%s/#!/hosts/browser/%s)',
                 $hostView->getHostname(),
@@ -335,7 +330,7 @@ class TelegramNotificationCommand extends Command
             );
 
             $this->sendMessage($title);
-        } elseif ($this->isFlappingDisabled()) {
+        } else if ($this->isFlappingDisabled()) {
             $title = sprintf(
                 'Disabled flap detection for [%s](%s/#!/hosts/browser/%s)',
                 $hostView->getHostname(),
@@ -380,8 +375,7 @@ class TelegramNotificationCommand extends Command
         }
     }
 
-    private function sendServiceNotification(Host $hostView, Service $serviceView)
-    {
+    private function sendServiceNotification(Host $hostView, Service $serviceView) {
         $servicestatusIcon = new ServicestatusIcon($this->state);
 
         if ($this->isAcknowledgement()) {
@@ -403,7 +397,7 @@ class TelegramNotificationCommand extends Command
             }
 
             $this->sendMessage($title);
-        } elseif ($this->isDowntimeStart()) {
+        } else if ($this->isDowntimeStart()) {
             $title = sprintf(
                 'Downtime start for service [%s](%s/#!/hosts/browser/%s)/[%s](%s/#!/services/browser/%s)',
                 $hostView->getHostname(),
@@ -419,7 +413,7 @@ class TelegramNotificationCommand extends Command
             }
 
             $this->sendMessage($title);
-        } elseif ($this->isDowntimeEnd()) {
+        } else if ($this->isDowntimeEnd()) {
             $title = sprintf(
                 'Downtime end for service [%s](%s/#!/hosts/browser/%s)/[%s](%s/#!/services/browser/%s)',
                 $hostView->getHostname(),
@@ -435,7 +429,7 @@ class TelegramNotificationCommand extends Command
             }
 
             $this->sendMessage($title);
-        } elseif ($this->isDowntimeCancelled()) {
+        } else if ($this->isDowntimeCancelled()) {
             $title = sprintf(
                 'Downtime cancelled for service [%s](%s/#!/hosts/browser/%s)/[%s](%s/#!/services/browser/%s)',
                 $hostView->getHostname(),
@@ -451,7 +445,7 @@ class TelegramNotificationCommand extends Command
             }
 
             $this->sendMessage($title);
-        } elseif ($this->isFlappingStart()) {
+        } else if ($this->isFlappingStart()) {
             $title = sprintf(
                 'Flapping started on [%s](%s/#!/hosts/browser/%s)/[%s](%s/#!/services/browser/%s)',
                 $hostView->getHostname(),
@@ -463,7 +457,7 @@ class TelegramNotificationCommand extends Command
             );
 
             $this->sendMessage($title);
-        } elseif ($this->isFlappingStop()) {
+        } else if ($this->isFlappingStop()) {
             $title = sprintf(
                 'Flapping stopped on [%s](%s/#!/hosts/browser/%s)/[%s](%s/#!/services/browser/%s)',
                 $hostView->getHostname(),
@@ -475,7 +469,7 @@ class TelegramNotificationCommand extends Command
             );
 
             $this->sendMessage($title);
-        } elseif ($this->isFlappingDisabled()) {
+        } else if ($this->isFlappingDisabled()) {
             $title = sprintf(
                 'Disabled flap detection for [%s](%s/#!/hosts/browser/%s)/[%s](%s/#!/services/browser/%s)',
                 $hostView->getHostname(),
@@ -526,8 +520,7 @@ class TelegramNotificationCommand extends Command
         }
     }
 
-    private function sendMessage($text, InlineKeyboardMarkup $inlineKeyboardMarkup = null)
-    {
+    private function sendMessage($text, InlineKeyboardMarkup $inlineKeyboardMarkup = null) {
         if ($this->telegramChats->count() > 0) {
             $this->telegramChats->each(function ($chat, $key) use ($text, $inlineKeyboardMarkup) {
                 if (is_array($chat)) {
@@ -557,38 +550,31 @@ class TelegramNotificationCommand extends Command
         }
     }
 
-    private function isAcknowledgement(): bool
-    {
+    private function isAcknowledgement(): bool {
         return $this->notificationtype === 'ACKNOWLEDGEMENT';
     }
 
-    private function isFlappingStart(): bool
-    {
+    private function isFlappingStart(): bool {
         return $this->notificationtype === 'FLAPPINGSTART';
     }
 
-    private function isFlappingStop(): bool
-    {
+    private function isFlappingStop(): bool {
         return $this->notificationtype === 'FLAPPINGSTOP';
     }
 
-    private function isFlappingDisabled(): bool
-    {
+    private function isFlappingDisabled(): bool {
         return $this->notificationtype === 'FLAPPINGDISABLED';
     }
 
-    private function isDowntimeStart(): bool
-    {
+    private function isDowntimeStart(): bool {
         return $this->notificationtype === 'DOWNTIMESTART';
     }
 
-    private function isDowntimeEnd(): bool
-    {
+    private function isDowntimeEnd(): bool {
         return $this->notificationtype === 'DOWNTIMEEND';
     }
 
-    private function isDowntimeCancelled(): bool
-    {
+    private function isDowntimeCancelled(): bool {
         return $this->notificationtype === 'DOWNTIMECANCELLED';
     }
 
@@ -596,8 +582,7 @@ class TelegramNotificationCommand extends Command
      * @param Arguments $args
      * @throws MissingParameterExceptions
      */
-    private function validateOptions(Arguments $args)
-    {
+    private function validateOptions(Arguments $args) {
         if ($args->getOption('type') === '') {
             throw new MissingParameterExceptions(
                 'Option --type is missing'

@@ -42,10 +42,10 @@
                                 <?php echo __('Token'); ?>
                             </label>
                             <input
-                                class="form-control"
-                                type="text"
-                                placeholder="123456789:YYKKKSNNIBBBBAAXXXXATCCC234567...."
-                                ng-model="telegramSettings.token">
+                                    class="form-control"
+                                    type="text"
+                                    placeholder="123456789:YYKKKSNNIBBBBAAXXXXATCCC234567...."
+                                    ng-model="telegramSettings.token">
                             <div ng-repeat="error in errors.token">
                                 <div class="help-block text-danger">{{ error }}</div>
                             </div>
@@ -81,10 +81,10 @@
                                         <?php echo __('External webhook domain'); ?>
                                     </label>
                                     <input
-                                        class="form-control"
-                                        type="text"
-                                        placeholder="https://demo.openitcockpit.io"
-                                        ng-model="telegramSettings.external_webhook_domain">
+                                            class="form-control"
+                                            type="text"
+                                            placeholder="https://demo.openitcockpit.io"
+                                            ng-model="telegramSettings.external_webhook_domain">
                                     <div ng-repeat="error in errors.external_webhook_domain">
                                         <div class="help-block text-danger">{{ error }}</div>
                                     </div>
@@ -100,10 +100,10 @@
                                         <?php echo __('Webhook api key'); ?>
                                     </label>
                                     <input
-                                        class="form-control"
-                                        type="text"
-                                        placeholder=""
-                                        ng-model="telegramSettings.webhook_api_key">
+                                            class="form-control"
+                                            type="text"
+                                            placeholder=""
+                                            ng-model="telegramSettings.webhook_api_key">
                                     <div ng-repeat="error in errors.webhook_api_key">
                                         <div class="help-block text-danger">{{ error }}</div>
                                     </div>
@@ -230,7 +230,8 @@
                                     &nbsp;| Telegram user: {{chat.started_from_username}}
                                 </span>
                                 <span>
-                                    <button class="btn btn-xs btn-success mr-1 shadow-0" ng-click="sendTestChatMessage(chat.id)">
+                                    <button class="btn btn-xs btn-success mr-1 shadow-0"
+                                            ng-click="sendTestChatMessage(chat.id)">
                                         <i class="fas fa-message"></i> <?php echo __('Send test chat message'); ?>
                                     </button>
                                     <a class="btn btn-xs btn-danger mr-1 shadow-0"

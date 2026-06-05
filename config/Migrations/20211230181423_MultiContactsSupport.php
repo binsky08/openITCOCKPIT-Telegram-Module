@@ -18,20 +18,20 @@ class MultiContactsSupport extends AbstractMigration {
             $this->table('telegram_contacts_access_keys')
                 ->addColumn('contact_uuid', 'string', [
                     'default' => null,
-                    'limit' => 37,
-                    'null' => false,
+                    'limit'   => 37,
+                    'null'    => false,
                 ])
                 ->addColumn('access_key', 'string', [
                     'default' => '',
-                    'limit' => 255,
-                    'null' => false,
+                    'limit'   => 255,
+                    'null'    => false,
                 ])
                 ->addColumn('created', 'datetime', [
                     'default' => null,
-                    'null' => false,
+                    'null'    => false,
                 ])->addColumn('modified', 'datetime', [
                     'default' => null,
-                    'null' => false,
+                    'null'    => false,
                 ])
                 ->addPrimaryKey('contact_uuid')
                 ->addForeignKey('contact_uuid', 'contacts', 'uuid', [
@@ -48,8 +48,8 @@ class MultiContactsSupport extends AbstractMigration {
             $this->table('telegram_chats')
                 ->addColumn('contact_uuid', 'string', [
                     'default' => null,
-                    'limit' => 37,
-                    'null' => false,
+                    'limit'   => 37,
+                    'null'    => false,
                 ])
                 ->save();
         }
@@ -78,8 +78,8 @@ class MultiContactsSupport extends AbstractMigration {
             $this->table('telegram_settings')
                 ->addColumn('access_key', 'string', [
                     'default' => '',
-                    'limit' => 255,
-                    'null' => false,
+                    'limit'   => 255,
+                    'null'    => false,
                 ])
                 ->save();
         }

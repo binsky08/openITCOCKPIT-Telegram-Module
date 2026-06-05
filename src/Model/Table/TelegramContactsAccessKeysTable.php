@@ -81,7 +81,7 @@ class TelegramContactsAccessKeysTable extends Table {
     public function getNewOrExistingAccessKeyByContactUuid(string $contact_uuid) {
         $default = [
             'contact_uuid' => $contact_uuid,
-            'access_key' => $this->generateRandomString()
+            'access_key'   => $this->generateRandomString()
         ];
 
         if ($this->exists(['contact_uuid' => $contact_uuid])) {

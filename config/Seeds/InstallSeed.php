@@ -14,8 +14,7 @@ use Migrations\AbstractSeed;
  * Apply:
  * oitc migrations seed -p TelegramModule
  */
-class InstallSeed extends AbstractSeed
-{
+class InstallSeed extends AbstractSeed {
     private const COMMANDS_TABLE_NAME = 'commands';
     private const CRONJOBS_TABLE_NAME = 'cronjobs';
 
@@ -29,8 +28,7 @@ class InstallSeed extends AbstractSeed
      *
      * @return void
      */
-    public function run(): void
-    {
+    public function run(): void {
         /** @var \Cake\Database\Connection $connection */
         $connection = ConnectionManager::get('default');
 

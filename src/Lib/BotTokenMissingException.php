@@ -2,7 +2,6 @@
 
 namespace TelegramModule\Lib;
 
-class BotTokenMissingException extends \Exception
-{
+class BotTokenMissingException extends \Exception {
 
 }

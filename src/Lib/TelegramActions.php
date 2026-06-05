@@ -22,8 +22,7 @@ use TelegramModule\Model\Table\TelegramChatsTable;
 use TelegramModule\Model\Table\TelegramContactsAccessKeysTable;
 use TelegramModule\Model\Table\TelegramSettingsTable;
 
-class TelegramActions
-{
+class TelegramActions {
     const DEFAULT_MESSAGE_PARSE_MODE = 'Markdown';
 
     /** @var TelegramChatsTable */
@@ -46,8 +45,7 @@ class TelegramActions
     /**
      * @throws \Exception | BotTokenMissingException
      */
-    public function __construct(string $tokenOverwrite = null)
-    {
+    public function __construct(string $tokenOverwrite = null) {
         $this->telegramChatsTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramChats');
         $this->telegramSettingsTable = TableRegistry::getTableLocator()->get('TelegramModule.TelegramSettings');
         $this->telegramContactsAccessKeysTable = TableRegistry::getTableLocator()->get(
@@ -81,8 +79,7 @@ class TelegramActions
     /**
      * @return bool
      */
-    public function isTwoWayWebhookEnabled(): bool
-    {
+    public function isTwoWayWebhookEnabled(): bool {
         return $this->telegramSettings->get('two_way') == 1;
     }
 
@@ -91,24 +88,21 @@ class TelegramActions
      * @return string
      * @throws Exception
      */
-    public function enableWebhook(string $completeWebhookUrl): string
-    {
+    public function enableWebhook(string $completeWebhookUrl): string {
         return $this->bot->setWebhook($completeWebhookUrl);
     }
 
     /**
      * @throws Exception
      */
-    public function disableWebhook()
-    {
+    public function disableWebhook() {
         $this->bot->deleteWebhook();
     }
 
     /**
      * @return \Exception|Exception|InvalidArgumentException|Update[]
      */
-    public function getUpdates()
-    {
+    public function getUpdates() {
         try {
             return $this->bot->getUpdates($this->getUpdateOffset() + 1);
         } catch (Exception|InvalidArgumentException $exception) {
@@ -121,8 +115,7 @@ class TelegramActions
      * @return Update
      * @throws InvalidArgumentException
      */
-    public function parseUpdate(array $updateArray): Update
-    {
+    public function parseUpdate(array $updateArray): Update {
         return Update::fromResponse($updateArray);
     }
 
@@ -133,8 +126,7 @@ class TelegramActions
      * @throws Exception
      * @throws InvalidArgumentException
      */
-    public function processUpdates($updates)
-    {
+    public function processUpdates($updates) {
         foreach ($updates as $update) {
             $this->processUpdate($update);
         }
@@ -162,8 +154,7 @@ class TelegramActions
      * @throws Exception
      * @throws InvalidArgumentException
      */
-    private function isChatAuthorized(Update $update): bool
-    {
+    private function isChatAuthorized(Update $update): bool {
         if ($this->telegramChatsTable->existsByChatId($update->getMessage()->getChat()->getId())) {
             return true;
         }
@@ -196,8 +187,7 @@ class TelegramActions
      * @throws Exception
      * @throws InvalidArgumentException
      */
-    public function processUpdate(Update $update)
-    {
+    public function processUpdate(Update $update) {
         if ($this->updateOffset < $update->getUpdateId()) {
             $this->updateOffset = $update->getUpdateId();
         }
@@ -309,8 +299,7 @@ class TelegramActions
      * @throws Exception
      * @throws InvalidArgumentException
      */
-    private function processAuthenticationMessage(Update $update): void
-    {
+    private function processAuthenticationMessage(Update $update): void {
         $providedAuthKey = str_replace('/auth ', '', trim($update->getMessage()->getText()));
         $contactAccessKey = $this->telegramContactsAccessKeysTable->getContactByAccessKey($providedAuthKey);
         if ($contactAccessKey !== null) {
@@ -370,8 +359,7 @@ class TelegramActions
      * @throws InvalidArgumentException
      * @throws ServiceNotFoundException
      */
-    public function processCallbackQueryData(CallbackQuery $callbackQuery): void
-    {
+    public function processCallbackQueryData(CallbackQuery $callbackQuery): void {
         $callbackData = $callbackQuery->getData();
 
         if (str_starts_with($callbackData, 'ack_host_')) {
@@ -423,8 +411,7 @@ class TelegramActions
     /**
      * @return int|mixed|null
      */
-    public function getUpdateOffset()
-    {
+    public function getUpdateOffset() {
         return $this->updateOffset;
     }
 
@@ -433,8 +420,7 @@ class TelegramActions
      * @throws Exception
      * @throws InvalidArgumentException
      */
-    public function notifyChatAboutDeauthorization($telegram_chat_id)
-    {
+    public function notifyChatAboutDeauthorization($telegram_chat_id) {
         $this->bot->sendMessage(
             $telegram_chat_id,
             TelegramInfoMessages::getText(TelegramInfoMessages::MESSAGE_DELETE_SUCCESSFUL),
@@ -450,8 +436,7 @@ class TelegramActions
      * @param string $author
      * @return bool whether host exists and ack was sent, or not
      */
-    private function acknowledgeHost(string $hostUuid, string $author): bool
-    {
+    private function acknowledgeHost(string $hostUuid, string $author): bool {
         /** @var HostsTable $hostsTable */
         $hostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
@@ -483,8 +468,7 @@ class TelegramActions
      * @param string $author
      * @return bool whether service exists and ack was sent, or not
      */
-    private function acknowledgeService(string $serviceUuid, string $author): bool
-    {
+    private function acknowledgeService(string $serviceUuid, string $author): bool {
         /** @var HostsTable $hostsTable */
         $hostsTable = TableRegistry::getTableLocator()->get('Hosts');
         /** @var ServicesTable $servicesTable */

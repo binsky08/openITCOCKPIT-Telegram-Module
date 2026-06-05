@@ -2,8 +2,7 @@
 
 namespace TelegramModule\Lib;
 
-class TelegramInfoMessages
-{
+class TelegramInfoMessages {
     // since php versions < 8.1 have to be supported, and they have no idea about enums, here's the workaround:
     const MESSAGE_WELCOME = 0;
     const MESSAGE_SUCCESSFULLY_ENABLED = 1;
@@ -20,8 +19,7 @@ class TelegramInfoMessages
      * @param int $messageType use TelegramInfoMessages constants as message types
      * @return string
      */
-    public static function getText(int $messageType)
-    {
+    public static function getText(int $messageType) {
         switch ($messageType) {
             case self::MESSAGE_WELCOME:
                 return __d('oitc_console', "Nice to see you %s %s");

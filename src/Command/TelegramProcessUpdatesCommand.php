@@ -18,14 +18,12 @@ use TelegramModule\Lib\TelegramActions;
  * TelegramModule command, used as cronjob for one-way update processing.
  * Trigger it manually by running: oitc cronjobs -f -t TelegramProcessUpdates
  */
-class TelegramProcessUpdatesCommand extends Command
-{
+class TelegramProcessUpdatesCommand extends Command {
     /**
      * @param ConsoleOptionParser $parser
      * @return ConsoleOptionParser
      */
-    public function buildOptionParser(ConsoleOptionParser $parser): ConsoleOptionParser
-    {
+    public function buildOptionParser(ConsoleOptionParser $parser): ConsoleOptionParser {
         $parser = parent::buildOptionParser($parser);
 
         $parser->addOptions([
@@ -40,8 +38,7 @@ class TelegramProcessUpdatesCommand extends Command
      * @param ConsoleIo $io
      * @return void
      */
-    public function execute(Arguments $args, ConsoleIo $io): void
-    {
+    public function execute(Arguments $args, ConsoleIo $io): void {
         $io->out('-------------------------------------------------------------------------------');
 
         if ($args->hasOption('api-token') && $args->getOption('api-token') != '') {
@@ -66,8 +63,7 @@ class TelegramProcessUpdatesCommand extends Command
      * @throws Exception
      * @throws HostNotFoundException
      */
-    private function processOneWayUpdates(TelegramActions $telegramActions, ConsoleIo $io): void
-    {
+    private function processOneWayUpdates(TelegramActions $telegramActions, ConsoleIo $io): void {
         $updates = $telegramActions->getUpdates();
         if ($updates instanceof \Exception) {
             if ($updates instanceof Exception && $updates->getCode() == 409) {

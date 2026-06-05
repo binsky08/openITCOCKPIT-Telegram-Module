@@ -14,7 +14,6 @@ use TelegramBot\Api\Exception;
 use TelegramBot\Api\InvalidArgumentException;
 use TelegramModule\Command\TelegramNotificationCommand;
 use TelegramModule\Lib\TelegramActions;
-use TelegramModule\Model\Entity\TelegramChats;
 use TelegramModule\Model\Entity\TelegramSetting;
 use TelegramModule\Model\Table\TelegramChatsTable;
 use TelegramModule\Model\Table\TelegramContactsAccessKeysTable;
@@ -25,16 +24,14 @@ use TelegramModule\Model\Table\TelegramSettingsTable;
  *
  * @method TelegramSetting[]|ResultSetInterface paginate($object = null, array $settings = [])
  */
-class TelegramSettingsController extends AppController
-{
+class TelegramSettingsController extends AppController {
 
     /**
      * Show Telegram Settings / Configuration page.
      * @throws Exception
      * @throws \Exception
      */
-    public function index()
-    {
+    public function index() {
         if (!$this->isAngularJsRequest()) {
             //Only ship html template
             return;
@@ -135,7 +132,7 @@ class TelegramSettingsController extends AppController
                 //disable Telegram bot webhook
                 $telegramActions = new TelegramActions($entity->get('token'));
                 $telegramActions->disableWebhook();
-            } elseif (
+            } else if (
                 ($entity->get('two_way') || $entity->get('two_way') == 1) &&
                 $entity->get('token') != "" &&
                 $entity->get('external_webhook_domain') != "" &&
@@ -174,8 +171,7 @@ class TelegramSettingsController extends AppController
      * Generates an access key for the given contact.
      * @return void
      */
-    public function genKey()
-    {
+    public function genKey() {
         if ($this->isAngularJsRequest() && $this->request->is('post')) {
             $contact_uuid = $this->request->getData('contact_uuid');
             if ($contact_uuid !== null) {
@@ -213,8 +209,7 @@ class TelegramSettingsController extends AppController
      * Removes the access key for the given contact.
      * @return void
      */
-    public function rmKey()
-    {
+    public function rmKey() {
         if ($this->isAngularJsRequest() && $this->request->is('post')) {
             $contact_uuid = $this->request->getData('contact_uuid');
             if ($contact_uuid !== null) {
@@ -255,8 +250,7 @@ class TelegramSettingsController extends AppController
      * @throws InvalidArgumentException
      * @throws \Exception
      */
-    public function rmChat()
-    {
+    public function rmChat() {
         if ($this->isAngularJsRequest() && $this->request->is('post')) {
             $id = $this->request->getData('id');
             if ($id !== null) {
@@ -287,8 +281,7 @@ class TelegramSettingsController extends AppController
     /**
      * @return void
      */
-    public function sendTestChatMessage()
-    {
+    public function sendTestChatMessage() {
         if ($this->isAngularJsRequest() && $this->request->is('post')) {
             $success = false;
             $responseMessage = __d(

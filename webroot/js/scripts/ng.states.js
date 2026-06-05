@@ -1,4 +1,4 @@
-openITCOCKPIT.config(function($stateProvider){
+openITCOCKPIT.config(function($stateProvider) {
     $stateProvider
         .state('TelegramSettingsIndex', {
             url: '/telegram_module/TelegramSettings/index',
