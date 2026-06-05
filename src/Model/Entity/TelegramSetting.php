@@ -29,7 +29,7 @@ class TelegramSetting extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'token'                   => true,
         'last_update_id'          => true,
         'two_way'                 => true,

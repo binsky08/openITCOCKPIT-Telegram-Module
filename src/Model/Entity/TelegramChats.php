@@ -27,7 +27,7 @@ class TelegramChats extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'chat_id'               => true,
         'enabled'               => true,
         'started_from_username' => true,

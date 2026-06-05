@@ -24,7 +24,7 @@ class TelegramContactsAccessKeys extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'contact_uuid' => true,
         'access_key'   => true,
         'created'      => true,
