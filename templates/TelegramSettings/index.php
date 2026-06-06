@@ -1,3 +1,8 @@
+<?php
+// SPDX-FileCopyrightText: 2021-2026 Timo Triebensky <contact@binsky.org>
+//
+// SPDX-License-Identifier: MIT
+?>
 <ol class="breadcrumb page-breadcrumb">
     <li class="breadcrumb-item">
         <a ui-sref="DashboardsIndex">

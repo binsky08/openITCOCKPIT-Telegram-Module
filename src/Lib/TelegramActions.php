@@ -1,5 +1,9 @@
 <?php
 
+// SPDX-FileCopyrightText: 2021-2026 Timo Triebensky <contact@binsky.org>
+//
+// SPDX-License-Identifier: MIT
+
 namespace TelegramModule\Lib;
 
 // require manual autoload for core-called files, since openitcockpit core does not autoload plugin dependencies

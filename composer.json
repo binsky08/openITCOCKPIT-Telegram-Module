@@ -21,6 +21,8 @@
     },
     "scripts": {
         "reuse": "reuse annotate",
-        "reuse-nix": "nix-shell -p reuse --command \"reuse annotate\""
+        "reuse-lint": "reuse lint",
+        "reuse-nix": "nix-shell -p reuse --command \"reuse annotate\"",
+        "reuse-lint-nix": "nix-shell -p reuse --command \"reuse lint\""
     }
 }
