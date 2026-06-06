@@ -18,5 +18,9 @@
             "TelegramModule\\Test\\": "tests/",
             "Cake\\Test\\": "vendor/cakephp/cakephp/tests/"
         }
+    },
+    "scripts": {
+        "reuse": "reuse annotate",
+        "reuse-nix": "nix-shell -p reuse --command \"reuse annotate\""
     }
 }

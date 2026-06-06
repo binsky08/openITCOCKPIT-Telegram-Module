@@ -1,0 +1,17 @@
+version = 1
+
+[[annotations]]
+path = [
+    "src/**",
+    "config/**",
+    "templates/**",
+    "webroot/**",
+    "composer.json",
+    "composer.lock",
+    "phpunit.xml.dist",
+    "README.md",
+    ".gitignore",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2021-2026 Timo Triebensky <contact@binsky.org>"
+SPDX-License-Identifier = "MIT"
